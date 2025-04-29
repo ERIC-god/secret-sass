@@ -12,10 +12,14 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^1.9.0",
     "@radix-ui/react-slot": "^1.2.0",
+    "@trpc/client": "^11.1.1",
+    "@trpc/server": "^11.1.1",
+    "@uppy/core": "^4.4.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.42.0",
+    "drizzle-zod": "^0.7.1",
     "lucide-react": "^0.503.0",
     "next": "14.2.5",
     "next-auth": "^4.24.11",
@@ -24,7 +28,8 @@
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^3.2.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -1,0 +1,12 @@
+/**
+ *  drizzle-orm 和 zod 联合
+ *  通过 drizzle-zod库 来实现 通过schema来创造出对应的 zodObject
+ */
+
+import {createInsertSchema,createSelectSchema} from 'drizzle-zod'
+import { users } from './schema'
+
+export const createUserSchema=createInsertSchema(users,{
+    name:(schema)=>schema.min(5)
+});
+

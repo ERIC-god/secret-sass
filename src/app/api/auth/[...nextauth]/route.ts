@@ -1,15 +1,7 @@
-import NextAuth from "next-auth"
-import GitlabProvider from "next-auth/providers/gitlab"
+import { authOptions } from "@/server/auth";
+import NextAuth from "next-auth";
 
-export const authOptions = {
-  // Configure one or more authentication providers
-  providers: [
-    // ...add more providers here
-    // GitlabProvider({
-    //     clientId: process.env.GITLAB_CLIENT_ID,
-    //     clientSecret: process.env.GITLAB_CLIENT_SECRET
-    // })
-  ],
-}
-
-export default NextAuth(authOptions)
+const handler = NextAuth(authOptions);
+/** 将 handler 函数作为 GET 导出   */
+/** 将同一个 handler 函数作为 POST 导出 */
+export { handler as GET, handler as POST };
