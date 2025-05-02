@@ -68,6 +68,9 @@ jobs:
       #     - ""
       - run: echo "HELLO,JAVASCRIPT"
       - run: 
+          name: Install
+          command: pnpm i
+      - run: 
           name: Build
           command: pnpm prod
       
