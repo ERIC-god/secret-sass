@@ -22,9 +22,9 @@ export const authOptions: AuthOptions = {
     /** GitLab 提供商配置  */
     GitlabProvider({
       clientId:
-        "70e6b4efb31aa2fe7aaac5adfbb3bbf0590fc8791458a695a7f0433b085913ba",
+        "ff47a27bacc3a494276914776bdc8fcff719a7a9ee834fa8ef6bbb9413367066",
       clientSecret:
-        "gloas-e0ae1b4e4103781d6bd42cff6b5344bcd104f409589db817b734bf2b0d1ddcba",
+        "gloas-433a1b247faf61b11467f502b7bedee1348447ee56c3ac4498879437566c4582",
     }),
   ],
 };

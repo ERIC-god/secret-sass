@@ -1,9 +1,10 @@
 import { createTRPCClient , httpBatchLink } from '@trpc/client';
-import type { SecretRouter } from './trpc';
-export const trpcClient = createTRPCClient <SecretRouter>({
+import type { AppRouter } from "@/server/trpc-middlewares/router";
+
+export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: 'http://localhost:3000/api/trpc'
+      url: "http://localhost:3000/api/trpc",
     }),
   ],
 });
