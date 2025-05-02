@@ -43,9 +43,6 @@ jobs:
   build:
     docker:
       -image: circle/node:20
-    branches:
-      only:
-        -master
     steps:
       - run: echo "A first hello"
       - run: npm -v
