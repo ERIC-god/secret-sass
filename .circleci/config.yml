@@ -42,7 +42,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: cimg/node:20
+      - image: cimg/node:20.10.0
     steps:
       - run: echo "A first hello"
       - run: npm -v
