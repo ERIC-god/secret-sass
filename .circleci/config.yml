@@ -38,11 +38,36 @@
 
 
 
+# version: 2
+# jobs:
+#   build:
+#     docker:
+#       - image: cimg/node:20.10.0
+#     steps:
+#       - run: echo "A first hello"
+#       - run: npm -v
+
+
+
+
+
+
+
 version: 2
-jobs:
+jobs: 
   build:
     docker:
       - image: cimg/node:20.10.0
+    branches:
+      only:
+        - main
     steps:
-      - run: echo "A first hello"
-      - run: npm -v
+      - checkout
+      # - add_ssh_keys:
+      #   fingerprints:
+      #     - ""
+      - run: echo "HELLO,JAVASCRIPT"
+      - run: 
+          name: Build
+          command: pnpm prod
+      
