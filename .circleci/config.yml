@@ -42,7 +42,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:21
+      - image: circleci/node:22.15.0
     steps:
       - run: echo "A first hello"
       - run: npm -v
