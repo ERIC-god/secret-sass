@@ -16,9 +16,9 @@ const apiEndpoint = "https://cos.ap-guangzhou.myqcloud.com";
 /** 区域 */
 const region = "ap-guangzhou";
 /** accessKeyID */
-const COS_APP_ID = "AKIDW0FExShhRu86oGTQ8bppa6MMFvLYVDfr";
+const COS_APP_ID = "";
 /** secretAccessKey */
-const COS_APP_SECRET = "f4E8nCLDpDMGuJSLxJPGqBKCoAG6g04s";
+const COS_APP_SECRET = "";
 
 /** 文件路由 */
 export const fileRoutes = router({
