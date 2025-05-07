@@ -15,7 +15,7 @@ const bucket = "secret-sass-1356904753";
 const apiEndpoint = "https://cos.ap-guangzhou.myqcloud.com";
 /** 区域 */
 const region = "ap-guangzhou";
-/** accessKeyID */
+/** accessKeyID */  
 const COS_APP_ID = "";
 /** secretAccessKey */
 const COS_APP_SECRET = "";
