@@ -10,15 +10,15 @@ import z from "zod";
 import { db } from "../db/db";
 import { files } from "../db/schema";
 /** 存储桶名称 */
-const bucket = "secret-sass-1356904753";
+const bucket = process.env.COS_APP_BUCKET;
 /** COS EndPoint */
 const apiEndpoint = "https://cos.ap-guangzhou.myqcloud.com";
 /** 区域 */
 const region = "ap-guangzhou";
-/** accessKeyID */  
-const COS_APP_ID = "";
+/** accessKeyID */
+const COS_APP_ID = process.env.COS_APP_ID;
 /** secretAccessKey */
-const COS_APP_SECRET = "";
+const COS_APP_SECRET = process.env.COS_APP_SECRET;
 
 /** 文件路由 */
 export const fileRoutes = router({
@@ -60,8 +60,8 @@ export const fileRoutes = router({
         endpoint: apiEndpoint,
         region: region,
         credentials: {
-          accessKeyId: COS_APP_ID,
-          secretAccessKey: COS_APP_SECRET,
+          accessKeyId: COS_APP_ID!,
+          secretAccessKey: COS_APP_SECRET!,
         },
         forcePathStyle: false, // 对于某些 S3 兼容服务可能需要
       });
@@ -107,3 +107,4 @@ export const fileRoutes = router({
       return photo[0];
     }),
 });
+

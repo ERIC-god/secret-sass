@@ -1,7 +1,7 @@
 import { AuthOptions } from "next-auth";
 import GitlabProvider from "next-auth/providers/gitlab";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "@/server/db/db";
+import { db } from "@/server/db/schema";
 import { getServerSession as nextAuthGetServerSession } from "next-auth";
 
 /** NextAuth.js 的配置代码*/
