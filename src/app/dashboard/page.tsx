@@ -1,12 +1,11 @@
 'use client'
-import {Uppy} from "@uppy/core";
-import AWSS3 from '@uppy/aws-s3';
-import { useState } from "react";
+import { Uppy } from "@uppy/core";
+import AWSS3 from "@uppy/aws-s3";
+import { useEffect, useState } from "react";
 import { trpcClient } from "@/utils/client";
 import { useUppyState } from "./useUppyState";
 
-
-export default function Dashboard(){
+export default function Dashboard() {
   const [uppy] = useState(() => {
     const uppy = new Uppy();
     uppy.use(AWSS3, {
@@ -23,7 +22,24 @@ export default function Dashboard(){
   });
 
   const files = useUppyState(uppy, (s) => Object.values(s.files));
- 
+
+  /** 监听uppy */
+  useEffect(() => {
+    const handler = (file: any, resp: any) => {
+      console.log(file, resp);
+      if (file) {
+        trpcClient.file.saveFile.mutate({
+          name: file.data instanceof File ? file.data.name : "test",
+          filePath: resp.uploadURL,
+          type: file.data.type,
+        });
+      }
+    };
+    uppy.on("upload-success", handler);
+    return () => {
+      uppy.off("upload-success", handler);
+    };
+  }, [uppy]);
 
   return (
     <div>
@@ -45,7 +61,11 @@ export default function Dashboard(){
       />
       {files.map((file: any) => {
         const url = URL.createObjectURL(file.data);
-        return <img src={url} key={file.id}></img>;
+        return (
+          <>
+            <img src={url} key={file.id}></img>;{url}
+          </>
+        );
       })}
       <button
         onClick={() => {

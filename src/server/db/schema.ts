@@ -114,7 +114,7 @@ export const files = pgTable("files", {
   createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
   deleteAt: timestamp("delete_at", { mode: "date" }).defaultNow(),
   path: varchar("path", { length: 1024 }).notNull(),
-  url: varchar("path", { length: 1024 }).notNull(),
+  url: varchar("url", { length: 1024 }).notNull(),
   userId: text("user_id").notNull(),
   contentType: varchar("content-type", { length: 100 }).notNull(),
 });
@@ -123,6 +123,6 @@ export const files = pgTable("files", {
  *  关联user表和files表
  */
 export const photoRelations = relations(files, ({ one }) => ({
-  user: one(users, { fields: [files.userId], references: [users.id] }),
+  files: one(users, { fields: [files.userId], references: [users.id] }),
 }));
 

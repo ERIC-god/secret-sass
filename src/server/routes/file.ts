@@ -7,7 +7,7 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import z from "zod";
-import { db } from "../db/db";
+import { db } from "../db/schema";
 import { files } from "../db/schema";
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;
@@ -68,11 +68,11 @@ export const fileRoutes = router({
 
       /** 创建Command , 通过getSignedUrl API, 来生成signed url*/
       const command = new PutObjectCommand(params);
-      const url = await getSignedUrl(s3Client, command, {
-        expiresIn: 60,
-      });
 
-      console.log(url);
+      /** getSignedUrl 生成一个临时、有权限限制的 URL，允许未经 AWS 身份验证的用户直接访问或操作 S3 中的对象，而无需拥有 AWS 凭证。 */
+      const url = await getSignedUrl(s3Client, command, {
+        expiresIn: 30,
+      });
 
       return {
         url,
@@ -80,31 +80,73 @@ export const fileRoutes = router({
       };
     }),
 
+  /**
+   *  通过drizzle语法 将图片插入数据库
+   */
   saveFile: protectedProcedure
     .input(
       z.object({
         name: z.string(),
-        path: z.string(),
+        filePath: z.string(),
         type: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
-      const url = new URL(input.path);
+      console.log("input.filePath:", input.filePath);
 
-      /** 通过drizzle 的插入语法来插入数据库 */
+      const url = new URL(input.filePath);
+
+      /** 执行插入数据库 */
       const photo = await db
         .insert(files)
         .values({
-          ...input,
+          name: input.name,
+          type: input.type,
+          /** 存储的文件夹路径 */
           path: url.pathname,
+          /** 存储的完整路径 */
           url: url.toString(),
+          /** 每个文件都有一个对应的userId */
           userId: session.user.id,
           contentType: input.type,
         })
+        /** returing就是把插入的数据返回 */
         .returning();
 
       return photo[0];
     }),
+
+    listFiles: protectedProcedure.query
+
 });
 
+
+
+
+// saveFile: protectedProcedure
+//     .input(
+//       z.object({
+//         name: z.string(),
+//         path: z.string(),
+//         type: z.string(),
+//       })
+//     )
+//     .mutation(async ({ ctx, input }) => {
+//       const { session } = ctx;
+//       const url = new URL(input.path);
+
+//       /** 通过drizzle 的插入语法来插入数据库 */
+//       const photo = await db
+//         .insert(files)
+//         .values({
+//           ...input,
+//           path: url.pathname,
+//           url: url.toString(),
+//           userId: session.user.id,
+//           contentType: input.type,
+//         })
+//         .returning();
+
+//       return photo[0];
+//     }),
