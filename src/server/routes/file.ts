@@ -9,6 +9,7 @@ import {
 import z from "zod";
 import { db } from "../db/schema";
 import { files } from "../db/schema";
+import { desc } from "drizzle-orm";
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;
 /** COS EndPoint */
@@ -117,8 +118,16 @@ export const fileRoutes = router({
       return photo[0];
     }),
 
-    listFiles: protectedProcedure.query
+  /**
+   *  列出文件列表
+   */
+  listFiles: protectedProcedure.query(async ({ ctx }) => {
+    const result = await db.query.files.findMany({
+      orderBy: [desc(files.createAt)],
+    });
 
+    return result;
+  }),
 });
 
 

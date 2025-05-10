@@ -4,7 +4,7 @@ import AWSS3 from "@uppy/aws-s3";
 import { useEffect, useState } from "react";
 import { trpcClient } from "@/utils/client";
 import { useUppyState } from "./useUppyState";
-
+import { UpLoad, Input } from "asecretman";
 export default function Dashboard() {
   const [uppy] = useState(() => {
     const uppy = new Uppy();
@@ -63,7 +63,8 @@ export default function Dashboard() {
         const url = URL.createObjectURL(file.data);
         return (
           <>
-            <img src={url} key={file.id}></img>;{url}
+            <img src={url} key={file.id}></img>
+            {url}
           </>
         );
       })}
@@ -74,6 +75,23 @@ export default function Dashboard() {
       >
         Upload
       </button>
+
+      <UpLoad
+        action=""
+        drag
+        onChange={(file) => {
+          uppy.addFile({
+            data: file,
+            name: file.name,
+            type: file.type,
+            source: "file input",
+          });
+          uppy.upload();
+        }}
+      >
+        drag
+      </UpLoad>
+      <Input size="lg" append="com" prepend="http"></Input>
     </div>
   );
 }

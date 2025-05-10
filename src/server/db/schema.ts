@@ -17,7 +17,7 @@ import { relations } from "drizzle-orm";
 const connectionString = "postgres://postgres:123123@localhost:5432/drizzle";
 const pool = postgres(connectionString, { max: 1 });
 
-export const db = drizzle(pool);
+
 
 export const users = pgTable("user", {
   id: text("id")
@@ -126,3 +126,4 @@ export const photoRelations = relations(files, ({ one }) => ({
   files: one(users, { fields: [files.userId], references: [users.id] }),
 }));
 
+export const db = drizzle(pool);
