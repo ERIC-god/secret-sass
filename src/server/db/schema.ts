@@ -126,4 +126,13 @@ export const photoRelations = relations(files, ({ one }) => ({
   files: one(users, { fields: [files.userId], references: [users.id] }),
 }));
 
-export const db = drizzle(pool);
+export const db = drizzle(pool, {
+  schema: {
+    users,
+    accounts,
+    sessions,
+    verificationTokens,
+    authenticators,
+    files,
+  },
+});

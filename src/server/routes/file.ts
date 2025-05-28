@@ -9,7 +9,8 @@ import {
 import z from "zod";
 import { db } from "../db/schema";
 import { files } from "../db/schema";
-import { desc } from "drizzle-orm";
+import { desc, gt } from "drizzle-orm";
+import { useInfiniteQuery } from "@tanstack/react-query";
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;
 /** COS EndPoint */
@@ -121,17 +122,37 @@ export const fileRoutes = router({
   /**
    *  列出文件列表
    */
-  listFiles: protectedProcedure.query(async ({ ctx }) => {
+  listFiles: protectedProcedure.query(async () => {
     const result = await db.query.files.findMany({
       orderBy: [desc(files.createAt)],
     });
 
     return result;
   }),
+
+  /**
+   *  无限列表
+   */
+  infinityQueryFiles: protectedProcedure
+    .input(
+      z.object({ cursor: z.string().optional(), limit: z.number().default(10) })
+    )
+    .query(async ({ input }) => {
+      const { limit, cursor } = input;
+      const result = await db
+        .select()
+        .from(files)
+        .limit(limit)
+        .where(cursor ? gt(files.id, cursor) : undefined)
+        /** decs 降序   asc 升序 */
+        .orderBy(desc(files.createAt));
+
+      return {
+        items: result,
+        nextCursor: result.length > 0 ? result[result.length - 1].id : null,
+      };
+    }),
 });
-
-
-
 
 // saveFile: protectedProcedure
 //     .input(

@@ -1,6 +1,6 @@
 
 import type { Metadata } from "next";
-import 'asecretman/build/index.css'
+
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -13,7 +13,6 @@ export default function DashborardLayout({
   return (      
    <div>
         <main>{children}</main>
-      
    </div>
   );
 }
