@@ -4,9 +4,14 @@
  */
 
 import {createInsertSchema,createSelectSchema} from 'drizzle-zod'
-import { users } from './schema'
+import { files, users } from "./schema";
 
-export const createUserSchema=createInsertSchema(users,{
-    name:(schema)=>schema.min(5)
+export const createUserSchema = createInsertSchema(users, {
+  name: (schema) => schema.min(5),
 });
 
+export const fileSchema = createSelectSchema(files);
+export const filesCanOrderByColumns = fileSchema.pick({
+  createAt: true,
+  deleteAt: true,
+});

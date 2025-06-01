@@ -7,17 +7,18 @@ import {
   integer,
   uuid,
   varchar,
+  index,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
 import { relations } from "drizzle-orm";
 
-
 const connectionString = "postgres://postgres:123123@localhost:5432/drizzle";
 const pool = postgres(connectionString, { max: 1 });
-
-
+// pool.unsafe('SET timezone="Asia/Shanghai";').then(() => {
+//   console.log("时区已设置为 Asia/Shanghai");
+// });
 
 export const users = pgTable("user", {
   id: text("id")
@@ -102,22 +103,28 @@ export const authenticators = pgTable(
   ]
 );
 
-export const files = pgTable("files", {
-  /** 
+export const files = pgTable(
+  "files",
+  {
+    /** 
    * 这行代码可以拆解为：
   id: - 这是 JavaScript 对象的属性名，它定义了你在代码中引用这个字段时使用的名称。
   uuid("id") - 这里的 "id" 是传递给 uuid() 函数的参数，表示数据库中的列名。
    */
-  id: uuid("id").notNull().primaryKey().defaultRandom(),
-  name: varchar("name", { length: 100 }).notNull(),
-  type: varchar("type", { length: 100 }).notNull(),
-  createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
-  deleteAt: timestamp("delete_at", { mode: "date" }).defaultNow(),
-  path: varchar("path", { length: 1024 }).notNull(),
-  url: varchar("url", { length: 1024 }).notNull(),
-  userId: text("user_id").notNull(),
-  contentType: varchar("content-type", { length: 100 }).notNull(),
-});
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    name: varchar("name", { length: 100 }).notNull(),
+    type: varchar("type", { length: 100 }).notNull(),
+    createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+    deleteAt: timestamp("delete_at", { mode: "date" }),
+    path: varchar("path", { length: 1024 }).notNull(),
+    url: varchar("url", { length: 1024 }).notNull(),
+    userId: text("user_id").notNull(),
+    contentType: varchar("content-type", { length: 100 }).notNull(),
+  },
+  (table) => ({
+    cursorIdx: index("cursor_idx").on(table.id, table.createAt),
+  })
+);
 
 /**
  *  关联user表和files表
@@ -136,3 +143,5 @@ export const db = drizzle(pool, {
     files,
   },
 });
+
+

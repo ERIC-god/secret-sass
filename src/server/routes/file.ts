@@ -9,14 +9,15 @@ import {
 import z from "zod";
 import { db } from "../db/schema";
 import { files } from "../db/schema";
-import { desc, gt } from "drizzle-orm";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { and, desc, gt, lt, asc, sql, eq, isNull } from "drizzle-orm";
+import { filesCanOrderByColumns, fileSchema } from "../db/validate-schema";
+
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;
 /** COS EndPoint */
-const apiEndpoint = "https://cos.ap-guangzhou.myqcloud.com";
+const apiEndpoint = process.env.COS_APP_ENDPOINT;
 /** 区域 */
-const region = "ap-guangzhou";
+const region = process.env.COS_APP_REGION;
 /** accessKeyID */
 const COS_APP_ID = process.env.COS_APP_ID;
 /** secretAccessKey */
@@ -126,7 +127,6 @@ export const fileRoutes = router({
     const result = await db.query.files.findMany({
       orderBy: [desc(files.createAt)],
     });
-
     return result;
   }),
 
@@ -135,24 +135,87 @@ export const fileRoutes = router({
    */
   infinityQueryFiles: protectedProcedure
     .input(
-      z.object({ cursor: z.string().optional(), limit: z.number().default(10) })
+      z.object({
+        /**
+         *  联合游标分页
+         *  适合排序字段可能重复的场景（比如很多数据的 created_at 一样）。
+         *  2. desc and asc
+         */
+        cursor: z
+          .object({
+            id: z.string(),
+            createAt: z.string(),
+          })
+          .optional(),
+        limit: z.number().default(10),
+        orderBy: z.object({
+          field: filesCanOrderByColumns.keyof(),
+          order: z.enum(["asc", "desc"]).optional(),
+        }),
+      })
     )
     .query(async ({ input }) => {
-      const { limit, cursor } = input;
-      const result = await db
+      const {
+        limit,
+        cursor,
+        orderBy = { field: "createAt", order: "desc" },
+      } = input;
+
+      const deletedFilter = isNull(files.deleteAt);
+
+      const state = db
         .select()
         .from(files)
         .limit(limit)
-        .where(cursor ? gt(files.id, cursor) : undefined)
-        /** decs 降序   asc 升序 */
-        .orderBy(desc(files.createAt));
+        .where(
+          cursor
+            ? and(
+                sql`("files"."created_at", "files"."id") < (${new Date(
+                  cursor.createAt
+                ).toISOString()}, ${cursor.id})`,
+                deletedFilter
+              )
+            : deletedFilter
+        );
+      // .orderBy(desc(files.createdAt));
+      state.orderBy(
+        orderBy.order === "desc"
+          ? desc(files[orderBy.field])
+          : asc(files[orderBy.field])
+      );
+      // .where(cursor ? lt(files.createAt, new Date(cursor)) : undefined);
+
+      const result = await state;
 
       return {
         items: result,
-        nextCursor: result.length > 0 ? result[result.length - 1].id : null,
+        nextCursor:
+          result.length > 0
+            ? {
+                createAt: result[result.length - 1].createAt!,
+                id: result[result.length - 1].id,
+              }
+            : null,
       };
     }),
+
+  /**
+   *  删除文件
+   */
+  deleteFile: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input }) => {
+      return db
+        .update(files)
+        .set({ deleteAt: new Date() })
+        .where(eq(files.id, input));
+    }),
+
+  setDeletedNull: protectedProcedure.mutation(async () => {
+    return await db.update(files).set({ deleteAt: null });
+  }),
 });
+
 
 // saveFile: protectedProcedure
 //     .input(
@@ -180,3 +243,27 @@ export const fileRoutes = router({
 
 //       return photo[0];
 //     }),
+
+
+
+/**
+ *  .where(
+          cursor
+            ? orderBy.order === "desc"
+              ? sql`("files"."created_at","files"."id") < (${new Date(
+                  cursor.createAt
+                ).toISOString()},${cursor.id})`
+              : sql`("files"."created_at","files"."id") > (${new Date(
+                  cursor.createAt
+                ).toISOString()},${cursor.id})`
+            : undefined
+        );
+
+    
+
+      if (orderBy.order === "desc") {
+        state.orderBy(desc(files.createAt), desc(files.id));
+      } else {
+        state.orderBy(asc(files.createAt), asc(files.id));
+      }
+ */
