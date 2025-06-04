@@ -7,10 +7,12 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import z from "zod";
-import { db } from "../db/schema";
+import { apps, db } from "../db/schema";
 import { files } from "../db/schema";
 import { and, desc, gt, lt, asc, sql, eq, isNull } from "drizzle-orm";
-import { filesCanOrderByColumns, fileSchema } from "../db/validate-schema";
+import { filesCanOrderByColumns } from "../db/validate-schema";
+import { v4 as uuidv4 } from "uuid";
+import { TRPCError } from "@trpc/server";
 
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;
@@ -37,6 +39,7 @@ export const fileRoutes = router({
         filename: z.string(),
         contentType: z.string(),
         size: z.number(),
+        appId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -44,13 +47,29 @@ export const fileRoutes = router({
       const isoString = date.toISOString();
       const dateString = isoString.split("T")[0];
 
+      const app = await db.query.apps.findFirst({
+        where: (apps) => eq(apps.id, input.appId),
+        with: {
+          storage: true,
+        },
+      });
+
+      console.log("app", app);
+      if (!app || !app.storage) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const storage = app.storage;
+
       /** 上传文件的必要参数 */
       /**
        * 设置上传文件的参数对象
        * PutObjectCommandInput是AWS S3 SDK中的类型
        */
       const params: PutObjectCommandInput = {
-        Bucket: bucket,
+        Bucket: storage.configuration.bucket,
         Key: `${dateString}/${input.filename.replaceAll(" ", "-")}`,
         ContentType: input.contentType,
         ContentLength: input.size,
@@ -60,11 +79,11 @@ export const fileRoutes = router({
        * 尽管使用AWS S3 SDK，但通过自定义endpoint指向腾讯云COS
        */
       const s3Client = new S3Client({
-        endpoint: apiEndpoint,
-        region: region,
+        endpoint: storage.configuration.apiEndpoint,
+        region: storage.configuration.region,
         credentials: {
-          accessKeyId: COS_APP_ID!,
-          secretAccessKey: COS_APP_SECRET!,
+          accessKeyId: storage.configuration.accessKeyId,
+          secretAccessKey: storage.configuration.secretAccessKey,
         },
         forcePathStyle: false, // 对于某些 S3 兼容服务可能需要
       });
@@ -92,6 +111,7 @@ export const fileRoutes = router({
         name: z.string(),
         filePath: z.string(),
         type: z.string(),
+        appId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -105,6 +125,7 @@ export const fileRoutes = router({
         .insert(files)
         .values({
           name: input.name,
+          id: uuidv4(),
           type: input.type,
           /** 存储的文件夹路径 */
           path: url.pathname,
@@ -113,6 +134,7 @@ export const fileRoutes = router({
           /** 每个文件都有一个对应的userId */
           userId: session.user.id,
           contentType: input.type,
+          appId: input.appId,
         })
         /** returing就是把插入的数据返回 */
         .returning();
@@ -123,7 +145,7 @@ export const fileRoutes = router({
   /**
    *  列出文件列表
    */
-  listFiles: protectedProcedure.query(async () => {
+  listFiles: protectedProcedure.query(async ({ ctx }) => {
     const result = await db.query.files.findMany({
       orderBy: [desc(files.createAt)],
     });
@@ -152,16 +174,20 @@ export const fileRoutes = router({
           field: filesCanOrderByColumns.keyof(),
           order: z.enum(["asc", "desc"]).optional(),
         }),
+        appId: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const {
         limit,
         cursor,
         orderBy = { field: "createAt", order: "desc" },
+        appId,
       } = input;
 
       const deletedFilter = isNull(files.deleteAt);
+      const userFilter = eq(files.userId, ctx.session.user.id);
+      const appFilter = eq(files.appId, appId);
 
       const state = db
         .select()
@@ -173,9 +199,11 @@ export const fileRoutes = router({
                 sql`("files"."created_at", "files"."id") < (${new Date(
                   cursor.createAt
                 ).toISOString()}, ${cursor.id})`,
-                deletedFilter
+                deletedFilter,
+                userFilter,
+                appFilter
               )
-            : deletedFilter
+            : and(deletedFilter, userFilter, appFilter)
         );
       // .orderBy(desc(files.createdAt));
       state.orderBy(

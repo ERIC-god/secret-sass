@@ -12,8 +12,10 @@ export const metadata: Metadata = {
 
 export default async function DashborardLayout({
   children,
+  nav,
 }: {
   children: React.ReactNode;
+  nav: React.ReactNode;
 }) {
   const session = await getServerSession();
 
@@ -32,6 +34,9 @@ export default async function DashborardLayout({
             </AvatarFallback>
           </Avatar>
         </Button>
+        <div className=" absolute top-0 h-full left-1/2 -translate-x-1/2 flex justify-center items-center">
+          {nav}
+        </div>
       </nav>
       <main>{children}</main>
     </div>

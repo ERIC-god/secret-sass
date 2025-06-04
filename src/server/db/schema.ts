@@ -8,6 +8,8 @@ import {
   uuid,
   varchar,
   index,
+  serial,
+  json,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -20,6 +22,9 @@ const pool = postgres(connectionString, { max: 1 });
 //   console.log("时区已设置为 Asia/Shanghai");
 // });
 
+/**
+ *  users表
+ */
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -30,6 +35,15 @@ export const users = pgTable("user", {
   image: text("image"),
 });
 
+// export const usersRelations = relations(users, ({ many }) => ({
+//   files: many(files),
+//   apps: many(apps),
+//   storages: many(storageConfiguration),
+// }));
+
+/**
+ *  accounts表
+ */
 export const accounts = pgTable(
   "account",
   {
@@ -103,6 +117,31 @@ export const authenticators = pgTable(
   ]
 );
 
+/**
+ *  apps表
+ */
+export const apps = pgTable("apps", {
+  id: uuid("id").notNull().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: varchar("description", { length: 500 }),
+  createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  deleteAt: timestamp("delete_at", { mode: "date" }),
+  userId: text("user_id").notNull(),
+  storageId: integer("storage_id"),
+});
+
+// export const appRelations = relations(apps, ({ one, many }) => ({
+//   user: one(users, { fields: [apps.userId], references: [users.id] }),
+//   storage: one(storageConfiguration, {
+//     fields: [apps.storageId],
+//     references: [storageConfiguration.id],
+//   }),
+//   files: many(files),
+// }));
+
+/**
+ *  files表
+ */
 export const files = pgTable(
   "files",
   {
@@ -111,7 +150,7 @@ export const files = pgTable(
   id: - 这是 JavaScript 对象的属性名，它定义了你在代码中引用这个字段时使用的名称。
   uuid("id") - 这里的 "id" 是传递给 uuid() 函数的参数，表示数据库中的列名。
    */
-    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    id: uuid("id").notNull().primaryKey(),
     name: varchar("name", { length: 100 }).notNull(),
     type: varchar("type", { length: 100 }).notNull(),
     createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
@@ -119,19 +158,89 @@ export const files = pgTable(
     path: varchar("path", { length: 1024 }).notNull(),
     url: varchar("url", { length: 1024 }).notNull(),
     userId: text("user_id").notNull(),
-    contentType: varchar("content-type", { length: 100 }).notNull(),
-  },
-  (table) => ({
-    cursorIdx: index("cursor_idx").on(table.id, table.createAt),
-  })
+    contentType: varchar("content_type", { length: 100 }).notNull(),
+    appId: uuid("app_id").notNull(),
+  }
+  // (table) => ({
+  //   cursorIdx: index("cursor_idx").on(table.id, table.createAt),
+  // })
 );
 
 /**
- *  关联user表和files表
+ *  
+    one(targetTable, { 
+      fields: [当前表的外键字段], 
+      references: [目标表的主键字段] 
+    })
  */
-export const photoRelations = relations(files, ({ one }) => ({
-  files: one(users, { fields: [files.userId], references: [users.id] }),
+// export const filesRelations = relations(files, ({ one }) => ({
+//   user: one(users, { fields: [files.userId], references: [users.id] }),
+//   app: one(apps, { fields: [files.appId], references: [apps.id] }),
+// }));
+
+/**
+ *  storegeConfiguration表
+ */
+export type S3StorageConfiguration = {
+  bucket: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  apiEndpoint: string;
+};
+
+
+
+export const storageConfiguration = pgTable("storageConfiguration", {
+  id: serial("id").primaryKey(), // serial() 自增
+  name: varchar("name", { length: 100 }).notNull(),
+  userId: text("user_id").notNull(),
+  configuration: json("configuration")
+    .$type<S3StorageConfiguration>()
+    .notNull(),
+  createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  deleteAt: timestamp("delete_at", { mode: "date" }),
+});
+
+// export const storageConfigurationRelation = relations(
+//   storageConfiguration,
+//   ({ one }) => ({
+//     user: one(users, {
+//       fields: [storageConfiguration.userId],
+//       references: [users.id],
+//     }),
+//   })
+// );
+
+export const usersRelations = relations(users, ({ many }) => ({
+  files: many(files),
+  apps: many(apps),
+  storages: many(storageConfiguration),
 }));
+
+export const filesRelations = relations(files, ({ one }) => ({
+  user: one(users, { fields: [files.userId], references: [users.id] }),
+  app: one(apps, { fields: [files.appId], references: [apps.id] }),
+}));
+
+export const appRelations = relations(apps, ({ one, many }) => ({
+  user: one(users, { fields: [apps.userId], references: [users.id] }),
+  storage: one(storageConfiguration, {
+    fields: [apps.storageId],
+    references: [storageConfiguration.id],
+  }),
+  files: many(files),
+}));
+
+export const storageConfigurationRelation = relations(
+  storageConfiguration,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [storageConfiguration.userId],
+      references: [users.id],
+    }),
+  })
+);
 
 export const db = drizzle(pool, {
   schema: {
@@ -141,7 +250,28 @@ export const db = drizzle(pool, {
     verificationTokens,
     authenticators,
     files,
+    apps,
+    storageConfiguration,
+    usersRelations,
+    filesRelations,
+    appRelations,
+    storageConfigurationRelation,
   },
 });
 
 
+
+
+
+/**
+ *  files: many(files) 的详细解释
+      这定义了从 apps 表到 files 表的一对多关系：
+      每个应用(app)可以有多个文件(file)
+      外键应该存在于 files 表中(如 appId)
+      这个外键指向 apps 表的 id 字段
+
+    为什么可以简写：  
+      因为外键不在当前表(apps)中，而在关联表(files)中
+      Drizzle 会自动在 files 表中寻找指向 apps 表的外键
+      前提是你已经在 files 表中定义了对应的关系
+ */
