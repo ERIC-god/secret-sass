@@ -29,7 +29,7 @@ export default function StoragePage({
     ) => {
         console.log("submit");
         mutate(data);
-        router.push(`/dashboard/apps/${id}/storage`);
+        router.push(`/dashboard/apps/${id}/setting/storage`);
     };
 
     return (
@@ -88,6 +88,7 @@ export default function StoragePage({
                         {...register("region", {
                             required: "region is required",
                         })}
+                        
                     ></Input>
                     <span className="text-red-500">
                         {errors.region?.message}

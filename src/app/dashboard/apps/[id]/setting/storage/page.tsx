@@ -37,15 +37,7 @@ export default function storagePage({
 
 
 
-  const currentApp = apps?.map((app) => {
-    if (app.id === id) {
-      return app;
-    }
-  })[0]
-
-  console.log(currentApp);
-  console.log(apps);
-  
+  const currentApp = apps?.filter((app) => app.id === id)[0];
   
 
   return (
@@ -54,7 +46,7 @@ export default function storagePage({
         <div className="flex justify-between items-center">
           <h1 className="text-3xl mb-6">Storage</h1>
           <Button asChild>
-            <Link href={`/dashboard/apps/${id}/storage/new`}>
+            <Link href={`/dashboard/apps/${id}/setting/storage/new`}>
               <Plus></Plus>
             </Link>
           </Button>

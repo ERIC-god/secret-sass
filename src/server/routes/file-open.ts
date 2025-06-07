@@ -1,6 +1,6 @@
+import { withAppProcedure } from "../trpc-middlewares/trpc";
 import { router } from "../trpc-middlewares/trpc";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { protectedProcedure } from "../trpc-middlewares/trpc";
 import {
   PutObjectCommand,
   S3Client,
@@ -14,25 +14,17 @@ import { filesCanOrderByColumns } from "../db/validate-schema";
 import { v4 as uuidv4 } from "uuid";
 import { TRPCError } from "@trpc/server";
 
-/** 存储桶名称 */
-const bucket = process.env.COS_APP_BUCKET;
-/** COS EndPoint */
-const apiEndpoint = process.env.COS_APP_ENDPOINT;
-/** 区域 */
-const region = process.env.COS_APP_REGION;
-/** accessKeyID */
-const COS_APP_ID = process.env.COS_APP_ID;
-/** secretAccessKey */
-const COS_APP_SECRET = process.env.COS_APP_SECRET;
+
+
 
 /** 文件路由 */
-export const fileRoutes = router({
+export const fileOpenRoutes = router({
   /**
    * 创建预签名URL的API端点
    * 用于前端直接上传文件到对象存储
    * 需要用户登录才能使用，通过protectedProcedure确保
    */
-  createPresignedUrl: protectedProcedure
+  createPresignedUrl: withAppProcedure 
     .input(
       /** 使用Zod定义输入参数验证规则 */
       z.object({
@@ -54,18 +46,17 @@ export const fileRoutes = router({
         },
       });
 
-      
+    
       if (!app || !app.storage) {
         throw new TRPCError({
           code: "BAD_REQUEST",
         });
       }
 
-      /** 此处存在严重安全漏洞,可能会被恶意攻击,没有判断此用户是否有权限操控此app */
-      if (ctx.session.user.id !== app.userId) {
+      if(app.userId!==ctx.user.id){
         throw new TRPCError({
-          code: "FORBIDDEN",
-        });
+            code:'FORBIDDEN'
+        })
       }
 
 
@@ -113,7 +104,7 @@ export const fileRoutes = router({
   /**
    *  通过drizzle语法 将图片插入数据库
    */
-  saveFile: protectedProcedure
+  saveFile: withAppProcedure
     .input(
       z.object({
         name: z.string(),
@@ -123,7 +114,7 @@ export const fileRoutes = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { session } = ctx;
+      const { user } = ctx;
       console.log("input.filePath:", input.filePath);
 
       const url = new URL(input.filePath);
@@ -140,7 +131,7 @@ export const fileRoutes = router({
           /** 存储的完整路径 */
           url: url.toString(),
           /** 每个文件都有一个对应的userId */
-          userId: session.user.id,
+          userId: user.id,
           contentType: input.type,
           appId: input.appId,
         })
@@ -153,7 +144,7 @@ export const fileRoutes = router({
   /**
    *  列出文件列表
    */
-  listFiles: protectedProcedure.query(async ({ ctx }) => {
+  listFiles: withAppProcedure.query(async ({ ctx }) => {
     const result = await db.query.files.findMany({
       orderBy: [desc(files.createAt)],
     });
@@ -163,7 +154,7 @@ export const fileRoutes = router({
   /**
    *  无限列表
    */
-  infinityQueryFiles: protectedProcedure
+  infinityQueryFiles: withAppProcedure
     .input(
       z.object({
         /**
@@ -194,7 +185,7 @@ export const fileRoutes = router({
       } = input;
 
       const deletedFilter = isNull(files.deleteAt);
-      const userFilter = eq(files.userId, ctx.session.user.id);
+      const userFilter = eq(files.userId, ctx.user.id);
       const appFilter = eq(files.appId, appId);
 
       const state = db
@@ -238,7 +229,7 @@ export const fileRoutes = router({
   /**
    *  删除文件
    */
-  deleteFile: protectedProcedure
+  deleteFile: withAppProcedure 
     .input(z.string())
     .mutation(async ({ input }) => {
       return db
@@ -247,9 +238,9 @@ export const fileRoutes = router({
         .where(eq(files.id, input));
     }),
 
-  setDeletedNull: protectedProcedure.mutation(async () => {
-    return await db.update(files).set({ deleteAt: null });
-  }),
+//   setDeletedNull: withAppProcedure .mutation(async () => {
+//     return await db.update(files).set({ deleteAt: null });
+//   }),
 });
 
 

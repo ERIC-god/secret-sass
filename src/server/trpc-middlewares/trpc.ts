@@ -1,5 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getServerSession } from "../auth";
+import { db } from "../db/schema";
+import { headers } from "next/headers";
+import { and, eq, isNull } from "drizzle-orm";
 
 /** createContext */
 /** 作用：为每个tRPC请求创建上下文对象 */
@@ -57,4 +60,42 @@ export const protectedProcedure = withLoggerProcedure
   .use(withSessionMiddleware)
   .use(checkSessionMiddleware);
 
+export const withAppProcedure = withLoggerProcedure.use(
+  async ({ ctx, next }) => {
+    const headersList = headers();
+    const apikey = headersList.get("api-key");
+    if (!apikey) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+      });
+    }
+
+    const apiKeyAndAppUser = await db.query.apiKeys.findFirst({
+      where: (apiKeys) =>
+        and(eq(apiKeys.key, apikey), isNull(apiKeys.deletedAt)),
+      with: {
+        app: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!apiKeyAndAppUser) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+      });
+    }
+
+    return next({
+      ctx: {
+        app: apiKeyAndAppUser.app,
+        user: apiKeyAndAppUser.app.user,
+      },
+    });
+  }
+);
+
 export { router };
+

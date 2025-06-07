@@ -7,7 +7,6 @@ import {
   integer,
   uuid,
   varchar,
-  index,
   serial,
   json,
 } from "drizzle-orm/pg-core";
@@ -189,8 +188,6 @@ export type S3StorageConfiguration = {
   apiEndpoint: string;
 };
 
-
-
 export const storageConfiguration = pgTable("storageConfiguration", {
   id: serial("id").primaryKey(), // serial() 自增
   name: varchar("name", { length: 100 }).notNull(),
@@ -200,6 +197,16 @@ export const storageConfiguration = pgTable("storageConfiguration", {
     .notNull(),
   createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
   deleteAt: timestamp("delete_at", { mode: "date" }),
+});
+
+/** apiKeys表 */
+export const apiKeys = pgTable("apiKeys", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  appId: uuid("appId").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  deletedAt: timestamp("deleted_at", { mode: "date" }),
 });
 
 // export const storageConfigurationRelation = relations(
@@ -242,6 +249,10 @@ export const storageConfigurationRelation = relations(
   })
 );
 
+export const apiKeysRelation = relations(apiKeys, ({ one }) => ({
+  app: one(apps, { fields: [apiKeys.appId], references: [apps.id] }),
+}));
+
 export const db = drizzle(pool, {
   schema: {
     users,
@@ -252,10 +263,12 @@ export const db = drizzle(pool, {
     files,
     apps,
     storageConfiguration,
+    apiKeys,
     usersRelations,
     filesRelations,
     appRelations,
     storageConfigurationRelation,
+    apiKeysRelation,
   },
 });
 
