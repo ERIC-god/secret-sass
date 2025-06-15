@@ -1,0 +1,3 @@
+packages:
+    - package/api
+    - example/imb

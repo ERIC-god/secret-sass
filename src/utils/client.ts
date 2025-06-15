@@ -5,6 +5,8 @@ import {
 } from "@trpc/react-query";
 import type { AppRouter } from "@/server/trpc-middlewares/router";
 
+
+
 export const trpcClientReact = createTRPCReact<AppRouter>({});
 export const trpcClient = createTRPCClient<AppRouter>({
   links: [
@@ -14,3 +16,5 @@ export const trpcClient = createTRPCClient<AppRouter>({
     }),
   ],
 });
+
+ 

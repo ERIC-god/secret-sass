@@ -24,7 +24,7 @@ export const fileOpenRoutes = router({
    * 用于前端直接上传文件到对象存储
    * 需要用户登录才能使用，通过protectedProcedure确保
    */
-  createPresignedUrl: withAppProcedure 
+  createPresignedUrl: withAppProcedure
     .input(
       /** 使用Zod定义输入参数验证规则 */
       z.object({
@@ -39,26 +39,19 @@ export const fileOpenRoutes = router({
       const isoString = date.toISOString();
       const dateString = isoString.split("T")[0];
 
-      const app = await db.query.apps.findFirst({
-        where: (apps) => eq(apps.id, input.appId),
-        with: {
-          storage: true,
-        },
-      });
+      const app = ctx.app;
 
-    
       if (!app || !app.storage) {
         throw new TRPCError({
           code: "BAD_REQUEST",
         });
       }
 
-      if(app.userId!==ctx.user.id){
+      if (app.userId !== ctx.user.id) {
         throw new TRPCError({
-            code:'FORBIDDEN'
-        })
+          code: "FORBIDDEN",
+        });
       }
-
 
       const storage = app.storage;
 
@@ -92,7 +85,7 @@ export const fileOpenRoutes = router({
 
       /** getSignedUrl 生成一个临时、有权限限制的 URL，允许未经 AWS 身份验证的用户直接访问或操作 S3 中的对象，而无需拥有 AWS 凭证。 */
       const url = await getSignedUrl(s3Client, command, {
-        expiresIn: 30,
+        expiresIn: 300,
       });
 
       return {
@@ -229,18 +222,16 @@ export const fileOpenRoutes = router({
   /**
    *  删除文件
    */
-  deleteFile: withAppProcedure 
-    .input(z.string())
-    .mutation(async ({ input }) => {
-      return db
-        .update(files)
-        .set({ deleteAt: new Date() })
-        .where(eq(files.id, input));
-    }),
+  deleteFile: withAppProcedure.input(z.string()).mutation(async ({ input }) => {
+    return db
+      .update(files)
+      .set({ deleteAt: new Date() })
+      .where(eq(files.id, input));
+  }),
 
-//   setDeletedNull: withAppProcedure .mutation(async () => {
-//     return await db.update(files).set({ deleteAt: null });
-//   }),
+  //   setDeletedNull: withAppProcedure .mutation(async () => {
+  //     return await db.update(files).set({ deleteAt: null });
+  //   }),
 });
 
 

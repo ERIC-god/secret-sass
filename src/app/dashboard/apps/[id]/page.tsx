@@ -17,6 +17,26 @@ export default function AppPage({
 }: {
   params: { id: string };
 }) {
+
+  const { data: apps, isPending } = trpcClientReact.app.listApps.useQuery(
+    void 0,
+    {
+      /**
+       *  refetchOnReconnect：当网络断开后重新连接时，是否自动重新请求数据。false 表示不会自动重新请求。
+          refetchOnWindowFocus：当窗口重新获得焦点时，是否自动重新请求数据。false 表示不会自动重新请求。
+          refetchOnMount：当组件重新挂载时，是否自动重新请求数据。false 表示不会自动重新请求。
+       */
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    }
+  );
+
+  const currentApp = apps?.filter((app) => app.id === appId)[0];
+  // const currentApp = results[0];
+
+  console.log(currentApp);
+
   /** uppy初始化(useState 惰性初始) */
   const [uppy] = useState(() => {
     const uppy = new Uppy();
@@ -66,7 +86,7 @@ export default function AppPage({
     }
   );
 
-  const { data: infinityQueryData, isPending, fetchNextPage } = result;
+  const { data: infinityQueryData, fetchNextPage } = result;
 
   /** id去重 */
   const fileList = infinityQueryData
@@ -263,38 +283,46 @@ export default function AppPage({
           );
         })}
 
-      <div>
-        {fileList?.map((file: any, index) => {
-          return (
-            <div key={file.id}>
-              <span>{index}</span>
-              {/* 删除文件按钮 */}
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  deleteFileMutation(file.id);
-                }}
-              >
-                <Trash2></Trash2>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  copy(file.url);
-                  toast("this URL has been copied successfully", {
-                    position: "top-center",
-                  });
-                }}
-              >
-                <Copy />
-              </Button>
-              <img src={`../../../image/${file.id}`} alt=""></img>
-              {/* <img src={file.url} alt=""></img> */}
-            </div>
-          );
-        })}
-        <div ref={bottomRef} className="w-full"></div>
-      </div>
+      {currentApp ? (
+        <div>
+          {isPending ? (
+            <div>Loading...</div>
+          ) : (
+            fileList?.map((file: any, index) => {
+              return (
+                <div key={file.id}>
+                  <span>{index}</span>
+                  {/* 删除文件按钮 */}
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      deleteFileMutation(file.id);
+                    }}
+                  >
+                    <Trash2></Trash2>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      copy(file.url);
+                      toast("this URL has been copied successfully", {
+                        position: "top-center",
+                      });
+                    }}
+                  >
+                    <Copy />
+                  </Button>
+                  <img src={`../../../image/${file.id}`} alt=""></img>
+                  {/* <img src={file.url} alt=""></img> */}
+                </div>
+              );
+            })
+          )}
+          <div ref={bottomRef} className="w-full"></div>
+        </div>
+      ) : (
+        <div>APP NOT FOUND</div>
+      )}
 
       <UploadPreview uppy={uppy}></UploadPreview>
 

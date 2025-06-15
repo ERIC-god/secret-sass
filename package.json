@@ -25,6 +25,7 @@
     "@trpc/client": "^11.1.1",
     "@trpc/react-query": "^11.1.2",
     "@trpc/server": "^11.1.1",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/use-sync-external-store": "^1.5.0",
     "@uppy/aws-s3": "^4.2.3",
     "@uppy/core": "^4.4.4",
@@ -36,6 +37,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.42.0",
     "drizzle-zod": "^0.7.1",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.503.0",
     "next": "14.2.29",
     "next-auth": "^4.24.11",
@@ -49,6 +51,7 @@
     "sonner": "^2.0.4",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
+    "tsup": "^8.5.0",
     "use-sync-external-store": "^1.5.0",
     "uuid": "^11.1.0",
     "zod": "^3.24.3"
@@ -65,5 +68,6 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.3",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
 }

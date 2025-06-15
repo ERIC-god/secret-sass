@@ -60,6 +60,8 @@ export const protectedProcedure = withLoggerProcedure
   .use(withSessionMiddleware)
   .use(checkSessionMiddleware);
 
+
+/** withAppProcedure 中间件 */
 export const withAppProcedure = withLoggerProcedure.use(
   async ({ ctx, next }) => {
     const headersList = headers();
@@ -69,18 +71,22 @@ export const withAppProcedure = withLoggerProcedure.use(
         code: "FORBIDDEN",
       });
     }
-
+    console.log("1");
+    
     const apiKeyAndAppUser = await db.query.apiKeys.findFirst({
       where: (apiKeys) =>
         and(eq(apiKeys.key, apikey), isNull(apiKeys.deletedAt)),
       with: {
         app: {
           with: {
+            storage: true,
             user: true,
           },
         },
       },
     });
+
+    console.log(apiKeyAndAppUser);
 
     if (!apiKeyAndAppUser) {
       throw new TRPCError({
@@ -92,6 +98,7 @@ export const withAppProcedure = withLoggerProcedure.use(
       ctx: {
         app: apiKeyAndAppUser.app,
         user: apiKeyAndAppUser.app.user,
+        // storage: apiKeyAndAppUser.app.storage,
       },
     });
   }
