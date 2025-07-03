@@ -4,6 +4,7 @@ import { getServerSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Plan } from "./Plan";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -34,6 +35,8 @@ export default async function DashborardLayout({
             </AvatarFallback>
           </Avatar>
         </Button>
+        <Plan></Plan>
+
         <div className=" absolute top-0 h-full left-1/2 -translate-x-1/2 flex justify-center items-center">
           {nav}
         </div>

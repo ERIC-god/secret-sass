@@ -10,27 +10,24 @@ import { trpcClientReact } from "@/utils/client";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";
 
-export default function page({ params: { id } }: { params: { id: string } }) {
-  const [newApikeyName,setNewApikeyName]=useState<string>('')
+export default function Page({ params: { id } }: { params: { id: string } }) {
+  const [newApikeyName, setNewApikeyName] = useState<string>("");
   const { data: apiKeys } = trpcClientReact.apiKey.listapiKeys.useQuery({
     appId: id,
   });
-  const utils=trpcClientReact.useUtils()
-  
-  const {mutate}=trpcClientReact.apiKey.createapiKey.useMutation({
-    onSuccess:(data,{})=>{
-        utils.apiKey.listapiKeys.setData({appId:id},(pre)=>{
-          setNewApikeyName('')
-          if(!pre||!data){
-            return pre
-          }
-          return [data,...pre]
-        })
-    }
-  })
- 
-  
+  const utils = trpcClientReact.useUtils();
 
+  const { mutate } = trpcClientReact.apiKey.createapiKey.useMutation({
+    onSuccess: (data, {}) => {
+      utils.apiKey.listapiKeys.setData({ appId: id }, (pre) => {
+        setNewApikeyName("");
+        if (!pre || !data) {
+          return pre;
+        }
+        return [data, ...pre];
+      });
+    },
+  });
 
   return (
     <div className="pt-10">
@@ -44,15 +41,23 @@ export default function page({ params: { id } }: { params: { id: string } }) {
           </PopoverTrigger>
           <PopoverContent>
             <div className="flex flex-col gap-4">
-              <Input placeholder="Name" onInput={(e:React.FormEvent<HTMLInputElement>)=>{
-                  setNewApikeyName((e.target as HTMLInputElement).value)
-              }}></Input>
-              <Button type="submit" onClick={()=>{
-                mutate({
-                  appId:id,
-                  name:newApikeyName
-                })
-              }} >Submit</Button>
+              <Input
+                placeholder="Name"
+                onInput={(e: React.FormEvent<HTMLInputElement>) => {
+                  setNewApikeyName((e.target as HTMLInputElement).value);
+                }}
+              ></Input>
+              <Button
+                type="submit"
+                onClick={() => {
+                  mutate({
+                    appId: id,
+                    name: newApikeyName,
+                  });
+                }}
+              >
+                Submit
+              </Button>
             </div>
           </PopoverContent>
         </Popover>
@@ -60,10 +65,12 @@ export default function page({ params: { id } }: { params: { id: string } }) {
 
       <div>
         {apiKeys?.map((apiKey) => {
-          return <div key={apiKey.id} className=" flex justify-between">
+          return (
+            <div key={apiKey.id} className=" flex justify-between">
               <span>{apiKey.name}</span>
               <span>{apiKey.key}</span>
-          </div>
+            </div>
+          );
         })}
       </div>
     </div>

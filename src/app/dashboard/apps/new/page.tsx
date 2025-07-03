@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { createApp } from "./action";
 
 
-export default function page() {
-  const router=useRouter();
-  async function handleSubmit(e:any) {
+export default function Page() {
+  const router = useRouter();
+  async function handleSubmit(e: any) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
-    const result = await createApp(name,description);    
+    const result = await createApp(name, description);
     // console.log(result.appId);
     // router.replace(`/dashboard/apps/${result.appId}`)
   }

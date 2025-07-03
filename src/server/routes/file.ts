@@ -7,12 +7,13 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import z from "zod";
-import { apps, db } from "../db/schema";
+import { apps } from "../db/schema";
 import { files } from "../db/schema";
 import { and, desc, gt, lt, asc, sql, eq, isNull } from "drizzle-orm";
 import { filesCanOrderByColumns } from "../db/validate-schema";
 import { v4 as uuidv4 } from "uuid";
 import { TRPCError } from "@trpc/server";
+import { db } from "@/server/db/db";
 
 /** 存储桶名称 */
 const bucket = process.env.COS_APP_BUCKET;

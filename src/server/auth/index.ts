@@ -1,7 +1,7 @@
 import { AuthOptions, DefaultUser, DefaultSession } from "next-auth";
 import GitlabProvider from "next-auth/providers/gitlab";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { db } from "@/server/db/schema";
+import { db } from "@/server/db/db";
 import { getServerSession as nextAuthGetServerSession } from "next-auth";
 
 declare module "next-auth" {
@@ -44,6 +44,8 @@ export const authOptions: AuthOptions = {
         "gloas-433a1b247faf61b11467f502b7bedee1348447ee56c3ac4498879437566c4582",
     }),
   ],
+
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 /** 可以让服务端获取 Session的一个工具 */

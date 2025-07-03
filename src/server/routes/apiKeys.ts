@@ -1,5 +1,6 @@
 import { eq,and, isNull } from "drizzle-orm";
-import { apiKeys, db } from "../db/schema";
+import { apiKeys } from "../db/schema";
+import { db } from "@/server/db/db";
 import { protectedProcedure, router } from "../trpc-middlewares/trpc";
 import { v4 as uuidv4 } from "uuid";
 import z from 'zod'

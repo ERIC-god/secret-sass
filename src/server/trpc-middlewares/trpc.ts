@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getServerSession } from "../auth";
-import { db } from "../db/schema";
+import { db } from "@/server/db/db";
 import { headers } from "next/headers";
 import { and, eq, isNull } from "drizzle-orm";
 
@@ -35,14 +35,14 @@ const withSessionMiddleware = middleware(async ({ ctx, next }) => {
 });
 
 const checkSessionMiddleware = middleware(async ({ ctx, next }) => {
-  if (!ctx.session?.user) {
+  if (!(ctx as any).session?.user) {
     throw new TRPCError({
       code: "FORBIDDEN",
     });
   }
   return next({
     ctx: {
-      session: ctx.session!,
+      session: (ctx as any).session,
     },
   });
 });
