@@ -7,7 +7,7 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import z from "zod";
-import { apps, db } from "../db/schema";
+import { db } from "@/server/db/db";
 import { files } from "../db/schema";
 import { and, desc, gt, lt, asc, sql, eq, isNull } from "drizzle-orm";
 import { filesCanOrderByColumns } from "../db/validate-schema";

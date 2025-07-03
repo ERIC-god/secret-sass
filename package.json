@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "prod": "next build && next start",
-    "studio": "npx drizzle-kit studio"
+    "studio": "npx drizzle-kit studio",
+    "push": "npx drizzle-kit push"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.9.0",
     "@aws-sdk/client-s3": "^3.798.0",
     "@aws-sdk/s3-request-presigner": "^3.798.0",
+    "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.13",

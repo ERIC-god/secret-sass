@@ -1,4 +1,4 @@
-import { db } from "@/server/db/schema";
+import { db } from "@/server/db/db";
 import {
   GetObjectCommand,
   GetObjectCommandInput,

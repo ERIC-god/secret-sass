@@ -1,6 +1,7 @@
 import { protectedProcedure, router } from "../trpc-middlewares/trpc";
 import { insertAppSchema } from "../db/validate-schema";
-import { apps, db } from "../db/schema";
+import { apps } from "../db/schema";
+import { db } from "@/server/db/db";
 import {v4 as uuidv4} from 'uuid'
 import { and, desc, eq, isNull } from "drizzle-orm";
 export const appRoutes=router({

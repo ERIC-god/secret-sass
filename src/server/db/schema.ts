@@ -11,12 +11,11 @@ import {
   json,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccount } from "next-auth/adapters";
 import { relations } from "drizzle-orm";
 
-const connectionString = "postgres://postgres:123123@localhost:5432/drizzle";
-const pool = postgres(connectionString, { max: 1 });
+// const connectionString = "postgres://postgres:123123@localhost:5432/drizzle";
+// const pool = postgres(connectionString, { max: 1 });
 // pool.unsafe('SET timezone="Asia/Shanghai";').then(() => {
 //   console.log("时区已设置为 Asia/Shanghai");
 // });
@@ -31,6 +30,7 @@ export const users = pgTable("user", {
   name: text("name"),
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
+  plan: text("plan", { enum: ["free", "payed"] }),
   image: text("image"),
 });
 
@@ -254,24 +254,7 @@ export const apiKeysRelation = relations(apiKeys, ({ one }) => ({
   app: one(apps, { fields: [apiKeys.appId], references: [apps.id] }),
 }));
 
-export const db = drizzle(pool, {
-  schema: {
-    users,
-    accounts,
-    sessions,
-    verificationTokens,
-    authenticators,
-    files,
-    apps,
-    storageConfiguration,
-    apiKeys,
-    usersRelations,
-    filesRelations,
-    appRelations,
-    storageConfigurationRelation,
-    apiKeysRelation,
-  },
-});
+
 
 
 

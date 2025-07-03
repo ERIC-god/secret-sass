@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import Link from "next/link";
-import { db } from "@/server/db/db";
+
 // import { Users } from '@/server/db/schema'
 import { eq } from "drizzle-orm";
 import { SessionProvider } from "./userInfo";
