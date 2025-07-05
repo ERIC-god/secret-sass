@@ -38,10 +38,8 @@ export const authOptions: AuthOptions = {
 
     /** GitLab 提供商配置  */
     GitlabProvider({
-      clientId:
-        "ff47a27bacc3a494276914776bdc8fcff719a7a9ee834fa8ef6bbb9413367066",
-      clientSecret:
-        "gloas-433a1b247faf61b11467f502b7bedee1348447ee56c3ac4498879437566c4582",
+      clientId: process.env.GITLAB_CLIENTID!,
+      clientSecret: process.env.GITLAB_CLIENTSECRET!,
     }),
   ],
 
