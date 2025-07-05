@@ -1,7 +1,5 @@
 export default function DefaultIntercepting() {
-    return <div>
-        default
-    </div>
+    return <div></div>;
 }
 
 /**

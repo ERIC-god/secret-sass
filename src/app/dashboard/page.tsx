@@ -10,6 +10,10 @@
 // import copy from "copy-to-clipboard";
 // import { toast } from "sonner";
 
+import { redirect } from "next/navigation";
+
+
+
 // export default function Dashboard() {
 //   /** uppy初始化(useState 惰性初始) */
 //   const [uppy] = useState(() => {
@@ -292,8 +296,8 @@
 //   );
 // }
 
-import React from "react";
 
-export default function page() {
-  return <div>page</div>;
+
+export default function DashboardPage() {
+  redirect("/dashboard/apps");
 }
