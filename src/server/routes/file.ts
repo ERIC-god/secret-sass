@@ -55,7 +55,6 @@ export const fileRoutes = router({
         },
       });
 
-      
       if (!app || !app.storage) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -68,7 +67,6 @@ export const fileRoutes = router({
           code: "FORBIDDEN",
         });
       }
-
 
       const storage = app.storage;
 
@@ -121,6 +119,7 @@ export const fileRoutes = router({
         filePath: z.string(),
         type: z.string(),
         appId: z.string(),
+        size: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -136,6 +135,7 @@ export const fileRoutes = router({
           name: input.name,
           id: uuidv4(),
           type: input.type,
+          size: input.size,
           /** 存储的文件夹路径 */
           path: url.pathname,
           /** 存储的完整路径 */

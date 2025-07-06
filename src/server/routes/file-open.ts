@@ -104,6 +104,7 @@ export const fileOpenRoutes = router({
         filePath: z.string(),
         type: z.string(),
         appId: z.string(),
+        size: z.number(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -118,6 +119,7 @@ export const fileOpenRoutes = router({
         .values({
           name: input.name,
           id: uuidv4(),
+          size: input.size,
           type: input.type,
           /** 存储的文件夹路径 */
           path: url.pathname,

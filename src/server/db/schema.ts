@@ -13,6 +13,7 @@ import {
 import postgres from "postgres";
 import type { AdapterAccount } from "next-auth/adapters";
 import { relations } from "drizzle-orm";
+import { number } from "zod";
 
 // const connectionString = "postgres://postgres:123123@localhost:5432/drizzle";
 // const pool = postgres(connectionString, { max: 1 });
@@ -152,6 +153,7 @@ export const files = pgTable(
     id: uuid("id").notNull().primaryKey(),
     name: varchar("name", { length: 100 }).notNull(),
     type: varchar("type", { length: 100 }).notNull(),
+    size: integer("size").notNull(),
     createAt: timestamp("created_at", { mode: "date" }).defaultNow(),
     deleteAt: timestamp("delete_at", { mode: "date" }),
     path: varchar("path", { length: 1024 }).notNull(),

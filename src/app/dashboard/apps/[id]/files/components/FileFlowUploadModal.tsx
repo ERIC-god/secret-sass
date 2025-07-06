@@ -60,7 +60,8 @@ export function FileFlowUploadModal({
           onDrop={e => {
             e.preventDefault();
             const files = Array.from(e.dataTransfer.files);
-            files.forEach(file => {
+
+            files.forEach((file) => {
               uppy.addFile({
                 data: file,
                 name: file.name,
@@ -82,7 +83,7 @@ export function FileFlowUploadModal({
             id="fileflow-upload-input"
             onChange={e => {
               if (e.target.files) {
-                Array.from(e.target.files).forEach(file => {
+                Array.from(e.target.files).forEach((file) => {
                   uppy.addFile({
                     data: file,
                     name: file.name,

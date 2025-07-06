@@ -350,9 +350,8 @@ import { Button } from "@/components/ui/button";
 import { MoveUp, MoveDown, Trash2, Copy, Upload } from "lucide-react";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
-import Link from "next/link";
-import { Settings } from "lucide-react";
 import { FileFlowUploadModal } from "./components/FileFlowUploadModal";
+import { usePathname } from "next/navigation";
 
 export default function AppPage({
   params: { id: appId },
@@ -376,6 +375,8 @@ export default function AppPage({
     uppy.use(AWSS3, {
       shouldUseMultipart: false,
       getUploadParameters(file) {
+        console.log(file);
+
         return trpcClient.file.createPresignedUrl.mutate({
           filename: file.data instanceof File ? file.data.name : "test",
           contentType: file.type!,
@@ -390,7 +391,8 @@ export default function AppPage({
   const utils = trpcClientReact.useUtils();
 
   // 删除文件
-  const { mutate: deleteFileMutation } = trpcClientReact.file.deleteFile.useMutation();
+  const { mutate: deleteFileMutation } =
+    trpcClientReact.file.deleteFile.useMutation();
 
   // 排序
   const [isDesc, setIsDesc] = useState<Boolean>(true);
@@ -407,7 +409,12 @@ export default function AppPage({
     }
   );
 
-  const { data: infinityQueryData, fetchNextPage, hasNextPage, isFetchingNextPage } = result;
+  const {
+    data: infinityQueryData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = result;
 
   // id去重
   const fileList = infinityQueryData
@@ -424,6 +431,7 @@ export default function AppPage({
   const uppyFilesObj = useUppyState(uppy, (s) => s.files);
   const uppyFiles = Object.values(uppyFilesObj);
   const [uploadingFileIDs, setuploadingFileIDs] = useState<string[]>([]);
+  console.log("window.location.hostname", window.location.hostname);
 
   // Uppy 事件监听
   useEffect(() => {
@@ -435,8 +443,11 @@ export default function AppPage({
             filePath: res.uploadURL,
             type: file.data.type,
             appId,
+            size: file.size,
           })
           .then((res) => {
+            console.log(res);
+
             utils.file.infinityQueryFiles.setInfiniteData(
               {
                 limit: 10,
@@ -514,13 +525,20 @@ export default function AppPage({
   // 上传弹窗
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  // fileList.map((item) => {
+  //   console.log(item.data);
+  // });
+
   return (
     <div className="w-full flex flex-col items-center pt-10">
       <div className="w-full max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-white mb-1">Files</h2>
-            <div className="text-gray-400">These are all of the files that have been uploaded via your uploader.</div>
+            <div className="text-gray-400">
+              These are all of the files that have been uploaded via your
+              uploader.
+            </div>
           </div>
           <Button
             className="bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white font-bold px-6 py-2 rounded-xl shadow hover:scale-105 transition flex items-center gap-2"
@@ -557,7 +575,11 @@ export default function AppPage({
                       className="ml-1 text-blue-400 hover:text-pink-400 transition"
                       onClick={handleSort}
                     >
-                      {isDesc ? <MoveDown className="w-4 h-4" /> : <MoveUp className="w-4 h-4" />}
+                      {isDesc ? (
+                        <MoveDown className="w-4 h-4" />
+                      ) : (
+                        <MoveUp className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </th>
@@ -577,11 +599,23 @@ export default function AppPage({
                   <td className="px-4 py-3">
                     <input type="checkbox" />
                   </td>
-                  <td className="px-4 py-3 text-white font-medium">{file.name}</td>
-                  <td className="px-4 py-3 text-blue-300">{file.route || "—"}</td>
-                  <td className="px-4 py-3 text-white">{file.size ? `${(file.size / 1024).toFixed(2)}KB` : "—"}</td>
-                  <td className="px-4 py-3 text-gray-300">{file.createdAt ? new Date(file.createdAt).toLocaleString() : "—"}</td>
-                  <td className="px-4 py-3 text-green-400">{file.status || "Uploaded"}</td>
+                  <td className="px-4 py-3 text-white font-medium">
+                    {file.name}
+                  </td>
+                  <td className="px-4 py-3 text-blue-300">
+                    {file.route || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-white">
+                    {file.size ? `${(file.size / 1024).toFixed(2)}KB` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-gray-300">
+                    {file.createAt
+                      ? new Date(file.createAt).toLocaleString()
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-green-400">
+                    {file.status || "Uploaded"}
+                  </td>
                   <td className="px-4 py-3 flex gap-2">
                     <Button
                       size="icon"
@@ -621,10 +655,7 @@ export default function AppPage({
             </div>
           )}
         </div>
-
-
       </div>
-      <UploadPreview uppy={uppy}></UploadPreview>
     </div>
   );
 }
