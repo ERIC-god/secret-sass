@@ -200,10 +200,7 @@ export default function StoragePage({
               >
                 {storage.name}
                 {storage.id === currentApp?.storageId && (
-                  <CheckCircle2
-                    className="w-5 h-5 text-pink-400 ml-2"
-                    title="Current"
-                  />
+                  <CheckCircle2 className="w-5 h-5 text-pink-400 ml-2" />
                 )}
               </AccordionTrigger>
               <AccordionContent>
