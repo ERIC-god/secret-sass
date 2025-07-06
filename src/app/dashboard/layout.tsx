@@ -20,9 +20,7 @@
 // }) {
 //   const session = await getServerSession();
 
-//   if (!session?.user) {
-//     redirect("/api/auth/signin");
-//   }
+
 
 //   return (
 //     <div>
@@ -49,11 +47,12 @@
 
 // components/DashboardLayout.tsx
 import { ReactNode } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Home, CreditCard, User } from "lucide-react";
 import clsx from "clsx";
 import { getServerSession } from "@/server/auth";
 import { Plan } from "./Plan";
+import { UserAvatar } from "./UserAvatar";
+import { redirect } from "next/navigation";
 
 const navItems = [
   { label: "Apps", icon: Home, href: "/dashboard/apps" },
@@ -70,8 +69,16 @@ type DashboardLayoutProps = {
   };
 };
 
-export default async function DashboardLayout({ children, user }: DashboardLayoutProps) {
+export default async function DashboardLayout({
+  children,
+  user,
+}: DashboardLayoutProps) {
   const session = await getServerSession();
+
+  if (!session?.user) {
+    redirect("/api/auth/signin");
+  }
+
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
       {/* 侧边栏 */}
@@ -105,13 +112,11 @@ export default async function DashboardLayout({ children, user }: DashboardLayou
           {/* 付费状态标签 */}
           <Plan></Plan>
           {/* 头像 */}
-          <Avatar className="w-9 h-9">
-            {session?.user ? (
-              <AvatarImage src={session.user.image!} alt={session.user.name!} />
-            ) : (
-              <AvatarFallback>{session?.user.name || "U"}</AvatarFallback>
-            )}
-          </Avatar>
+          <UserAvatar
+            src={session?.user.image!}
+            alt={session?.user.name!}
+            fallbackText={session?.user.name!}
+          />
         </header>
         {/* 主内容插槽 */}
         <main className="flex-1  min-h-screen overflow-auto">{children}</main>

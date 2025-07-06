@@ -74,37 +74,50 @@ export default function AppsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-7">
           {apps?.map((app, idx) => (
-            <Link  key={idx} href={`/dashboard/apps/${app.id}`}>
-              <div
-             
-              className="group relative bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] p-7 flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:shadow-2xl hover:-translate-y-1"
-            >
-              {/* 右上角品牌色小圆点 */}
-              <span className="absolute top-5 right-5 w-2 h-2 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 opacity-70 group-hover:opacity-100 transition"></span>
-              {/* name */}
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl font-bold text-white truncate group-hover:text-pink-400 transition">
-                  {app.name}
-                </span>
-              </div>
-              {/* description */}
-              <div className="text-gray-300 text-sm mb-6 break-words min-h-[24px]">
-                {app.description || <span className="text-gray-500">暂无描述</span>}
-              </div>
-              {/* createdAt */}
-              <div className="flex items-center justify-end">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm
+            <Link key={idx} href={`/dashboard/apps/${app.id}/files`}>
+              <div className="group relative bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] p-7 flex flex-col justify-between min-h-[140px] transition-all duration-200 hover:shadow-2xl hover:-translate-y-1">
+                {/* 右上角品牌色小圆点 */}
+                <span className="absolute top-5 right-5 w-2 h-2 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 opacity-70 group-hover:opacity-100 transition"></span>
+                {/* name */}
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl font-bold text-white truncate group-hover:text-pink-400 transition">
+                    {app.name}
+                  </span>
+                </div>
+                {/* description */}
+                <div className="text-gray-300 text-sm mb-6 break-words min-h-[24px]">
+                  {app.description || (
+                    <span className="text-gray-500">暂无描述</span>
+                  )}
+                </div>
+                {/* createdAt */}
+                <div className="flex items-center justify-end">
+                  <span
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/5 backdrop-blur-sm
                   text-xs font-semibold bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 bg-clip-text text-transparent
                   border border-white/10 shadow-sm select-none"
-                >
-                  <svg className="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <rect x="3" y="4" width="18" height="18" rx="4" stroke="currentColor" />
-                    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" />
-                  </svg>
-                  {formatDate(app.createAt!)}
-                </span>
+                  >
+                    <svg
+                      className="w-4 h-4 text-pink-400"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="3"
+                        y="4"
+                        width="18"
+                        height="18"
+                        rx="4"
+                        stroke="currentColor"
+                      />
+                      <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" />
+                    </svg>
+                    {formatDate(app.createAt!)}
+                  </span>
+                </div>
               </div>
-            </div>
             </Link>
           ))}
         </div>

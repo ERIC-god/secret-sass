@@ -25,19 +25,19 @@ export default function Page() {
       {/* 主卡片 */}
       <div className="relative w-full max-w-xl bg-gradient-to-br from-[#23235b]/95 via-[#2e2e4e]/95 to-[#1a1a2e]/95 rounded-3xl shadow-2xl border border-[#3a3a6a]/60 p-12 flex flex-col items-center">
         <h1 className="text-4xl font-extrabold mb-10 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 drop-shadow-lg tracking-wide text-center">
-          创建新应用
+          Create a new app
         </h1>
         <form className="w-full flex flex-col gap-7" onSubmit={handleSubmit}>
           <Input
             name="name"
-            placeholder="应用名称"
+            placeholder="App's Name"
             minLength={3}
             required
             className="bg-[#18182f] text-white border-none shadow-inner rounded-xl px-6 py-4 text-lg focus:ring-2 focus:ring-pink-400 focus:outline-none transition"
           />
           <Textarea
             name="description"
-            placeholder="应用描述"
+            placeholder="App's Description"
             className="bg-[#18182f] text-white border-none shadow-inner rounded-xl px-6 py-4 text-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition resize-none"
             rows={4}
           />
@@ -49,7 +49,7 @@ export default function Page() {
                 "0 4px 32px 0 rgba(255, 192, 203, 0.15), 0 1.5px 8px 0 rgba(0,0,0,0.10)",
             }}
           >
-            创建应用
+            Create App
           </Button>
         </form>
       </div>

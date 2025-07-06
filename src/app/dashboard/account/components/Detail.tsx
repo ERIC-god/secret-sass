@@ -21,9 +21,11 @@ export default function Detail({ session }: { session: ISession }) {
     router.replace("/login");
   }
 
+  function handleDeleteAccount() {}
+
   return (
     <div className="w-full h-full px-8 py-10">
-      <div className="max-w-2xl mx-auto bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-xl border border-[#35356a] p-8 relative">
+      <div className="max-w-2xl mt-16 mx-auto bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-xl border border-[#35356a] p-8 relative">
         {/* Log out button */}
         <Button
           onClick={handleLogout}
@@ -94,7 +96,7 @@ export default function Detail({ session }: { session: ISession }) {
           <Button
             variant="outline"
             className="border-pink-500 text-pink-500 hover:bg-pink-500/10"
-            // onClick={handleDeleteAccount}
+            onClick={handleDeleteAccount}
           >
             Delete Account
           </Button>
