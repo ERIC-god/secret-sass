@@ -34,26 +34,43 @@ const plans = [
 // 假设你有当前套餐 data
 // const data = "free"; // or "pro"
 
+
 export default function PlanPage() {
-  const {data}=trpcClientReact.user.getPlan.useQuery()
-  useEffect(()=>{
-    
-  },[])
+  const { data } = trpcClientReact.user.getPlan.useQuery();
+  const { mutate: upgradePro } = trpcClientReact.user.upgrade.useMutation({
+    onSuccess: (res) => {
+      window.location.href = res.url;
+    },
+  });
+  const handleUpgrade = () => {
+    upgradePro();
+  };
 
   return (
     <div className="w-full flex flex-col items-center mt-10">
       <div className="w-full max-w-4xl">
-        <h2 className="text-2xl font-extrabold text-white mb-1">Plan & Billing</h2>
-        <div className="text-gray-400 mb-8">Manage your subscription for this application.</div>
+        <h2 className="text-2xl font-extrabold text-white mb-1">
+          Plan & Billing
+        </h2>
+        <div className="text-gray-400 mb-8">
+          Manage your subscription for this application.
+        </div>
 
         {/* 当前套餐 */}
         <div className="mb-10">
           <div className="bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="font-bold text-white text-lg mb-1">Current Plan</div>
-              <div className="text-gray-400 mb-2">Manage and view your current plan</div>
+              <div className="font-bold text-white text-lg mb-1">
+                Current Plan
+              </div>
+              <div className="text-gray-400 mb-2">
+                Manage and view your current plan
+              </div>
               <div className="text-white">
-                Plan: <span className="font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 bg-clip-text text-transparent">{plans.find(p => p.key === data)?.name}</span>
+                Plan:{" "}
+                <span className="font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+                  {plans.find((p) => p.key === data)?.name}
+                </span>
               </div>
               <div className="text-gray-400 text-sm">No expiration.</div>
             </div>
@@ -70,7 +87,9 @@ export default function PlanPage() {
 
         {/* 可选套餐 */}
         <div>
-          <div className="font-bold text-white text-lg mb-4">Available Plans</div>
+          <div className="font-bold text-white text-lg mb-4">
+            Available Plans
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {plans.map((plan) => (
               <div
@@ -80,7 +99,9 @@ export default function PlanPage() {
                 `}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl font-extrabold text-white">{plan.name}</span>
+                  <span className="text-xl font-extrabold text-white">
+                    {plan.name}
+                  </span>
                   {plan.key === data && (
                     <span className="ml-2 px-3 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white text-xs font-bold shadow">
                       Current plan
@@ -100,11 +121,14 @@ export default function PlanPage() {
                   ))}
                 </ul>
                 {plan.note && (
-                  <div className="text-xs text-gray-400 italic">{plan.note}</div>
+                  <div className="text-xs text-gray-400 italic">
+                    {plan.note}
+                  </div>
                 )}
                 {plan.key !== data && (
                   <Button
                     className="mt-4 w-full py-2 rounded-lg font-bold text-lg bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white shadow-lg hover:scale-105 transition"
+                    onClick={handleUpgrade}
                   >
                     Switch to {plan.name}
                   </Button>

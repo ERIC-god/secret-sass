@@ -1,73 +1,52 @@
-import { Button } from "@/components/ui/button";
+"use client";
 import { trpcClientReact } from "@/utils/client";
+import Link from "next/link";
+import { useEffect } from "react";
 
-export default function Plan() {
-    // const { mutate, isPending } = trpcClientReact.user.upgrade.useMutation({
-    //     onSuccess: (resp) => {
-    //         window.location.href = resp.url;
-    //     },
-    // });
+export default function BillingPage() {
+  // TODO: 替换为实际的账单判断逻辑
+  const hasBilling = false;
+  // TODO: 替换为实际的 appId
 
-    return (
-        <section className="">
-            <div className="container px-4">
-                <div className="flex flex-col items-center space-y-4 md:space-y-8">
-                    <div className="grid max-w-sm gap-4 md:grid-cols-1 md:max-w-none md:gap-8">
-                        <div className="flex flex-col rounded-lg border-2 border-indigo-600">
-                            <div className="flex-1 grid items-center justify-center p-6 text-center">
-                                <h2 className="text-lg font-semibold">Pro</h2>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    For growing usage with additional needs
-                                </p>
-                            </div>
-                            <div className="border-t border-gray-200 dark:border-gray-800">
-                                <div className="grid items-center justify-center p-6">
-                                    <span className="text-2xl font-semibold">
-                                        $10
-                                    </span>
-                                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                                        per month
-                                    </span>
-                                </div>
-                            </div>
-                            <ul className="divide-y divide-gray-200 dark:divide-gray-800">
-                                <li className="p-4 text-sm">
-                                    <span className="font-medium">
-                                        Unlimited
-                                    </span>
-                                    Uploads
-                                </li>
-                                <li className="p-4 text-sm">
-                                    <span className="font-medium">
-                                        Unlimited
-                                    </span>
-                                    Apps
-                                </li>
-                                <li className="p-4 text-sm">
-                                    <span className="font-medium">
-                                        Unlimited
-                                    </span>
-                                    Storage Configurations
-                                </li>
-                                <li className="p-4 text-sm">
-                                    <span className="font-medium">AI</span>
-                                    Feature
-                                </li>
-                            </ul>
-                            <div className="p-4">
-                                <Button
-                                    // disabled={isPending}
-                                    // onClick={() => {
-                                    //     mutate();
-                                    // }}
-                                >
-                                    Upgrade
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
+  const { data: apps, isPending } = trpcClientReact.app.listApps.useQuery(
+    void 0,
+    {
+      /**
+         *  refetchOnReconnect：当网络断开后重新连接时，是否自动重新请求数据。false 表示不会自动重新请求。
+            refetchOnWindowFocus：当窗口重新获得焦点时，是否自动重新请求数据。false 表示不会自动重新请求。
+            refetchOnMount：当组件重新挂载时，是否自动重新请求数据。false 表示不会自动重新请求。
+         */
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    }
+  );
+  const appId = apps && apps.length > 0 ? apps[0].id : undefined;
+
+  return (
+    <div className="p-8">
+      {!hasBilling ? (
+        <div>
+          <h1 className="text-2xl font-bold mb-2 text-gray-300">
+            Team Billing
+          </h1>
+          <p className="text-gray-500 mb-6">
+            No billing information found. Once you upgrade an app to a paid
+            tier, billing information will be displayed here.
+          </p>
+          <Link
+            href={`/dashboard/apps/${appId}/plan`}
+            className="inline-block bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white font-bold px-6 py-2 rounded-xl shadow hover:scale-105 transition"
+          >
+            View Subscription
+          </Link>
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Team Billing</h1>
+          <p className="text-gray-500">这里将展示账单信息</p>
+        </div>
+      )}
+    </div>
+  );
 }

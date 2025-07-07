@@ -345,13 +345,12 @@ import AWSS3 from "@uppy/aws-s3";
 import { useEffect, useRef, useState } from "react";
 import { trpcClient, trpcClientReact } from "@/utils/client";
 import { useUppyState } from "../../../useUppyState";
-import { UploadPreview } from "@/components/packaging/UploadPreview";
 import { Button } from "@/components/ui/button";
 import { MoveUp, MoveDown, Trash2, Copy, Upload } from "lucide-react";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
 import { FileFlowUploadModal } from "./components/FileFlowUploadModal";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function AppPage({
   params: { id: appId },
@@ -368,7 +367,7 @@ export default function AppPage({
   );
 
   const currentApp = apps?.filter((app) => app.id === appId)[0];
-
+  const router = useRouter();
   // Uppy 初始化
   const [uppy] = useState(() => {
     const uppy = new Uppy();
@@ -377,12 +376,19 @@ export default function AppPage({
       getUploadParameters(file) {
         console.log(file);
 
-        return trpcClient.file.createPresignedUrl.mutate({
+        const result = trpcClient.file.createPresignedUrl.mutate({
           filename: file.data instanceof File ? file.data.name : "test",
           contentType: file.type!,
           size: file.size!,
           appId,
         });
+
+        result.catch(() => {
+          setTimeout(() => {
+            router.push(`/dashboard/apps/${appId}/plan`);
+          }, 1000);
+        });
+        return result;
       },
     });
     return uppy;
@@ -431,7 +437,7 @@ export default function AppPage({
   const uppyFilesObj = useUppyState(uppy, (s) => s.files);
   const uppyFiles = Object.values(uppyFilesObj);
   const [uploadingFileIDs, setuploadingFileIDs] = useState<string[]>([]);
-  console.log("window.location.hostname", window.location.hostname);
+  // console.log("window.location.hostname", window.location.hostname);
 
   // Uppy 事件监听
   useEffect(() => {
@@ -444,6 +450,7 @@ export default function AppPage({
             type: file.data.type,
             appId,
             size: file.size,
+            route: window.location.hostname,
           })
           .then((res) => {
             console.log(res);
@@ -477,6 +484,7 @@ export default function AppPage({
             );
           });
       }
+      toast.success("操作成功！", { position: "top-center" });
     };
 
     const uploadHandler = (uploadID: any, files: any) => {
@@ -487,16 +495,23 @@ export default function AppPage({
 
     const completeHandler = () => {
       setuploadingFileIDs([]);
+      uppy.getFiles().forEach((file) => uppy.removeFile(file.id));
+    };
+
+    const errorHandler = () => {
+      toast.error("操作失败!", { position: "top-center" });
     };
 
     uppy.on("upload-success", handler);
     uppy.on("upload", uploadHandler);
     uppy.on("complete", completeHandler);
+    uppy.on("upload-error", errorHandler);
 
     return () => {
       uppy.off("upload-success", handler);
       uppy.off("upload", uploadHandler);
       uppy.off("complete", completeHandler);
+      uppy.off("upload-error", errorHandler);
     };
   }, [uppy]);
 
@@ -530,7 +545,7 @@ export default function AppPage({
   // });
 
   return (
-    <div className="w-full flex flex-col items-center pt-10">
+    <div className="w-full flex flex-col items-center pt-4">
       <div className="w-full max-w-5xl">
         <div className="flex items-center justify-between mb-6">
           <div>

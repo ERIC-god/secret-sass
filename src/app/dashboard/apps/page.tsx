@@ -2,16 +2,29 @@
 "use client";
 import Link from "next/link";
 import { trpcClientReact } from "@/utils/client";
+import { toast } from "sonner";
 
 // 下面是 NoApps 和 AppsSkeleton 组件，直接放在同文件即可
 function NoApps() {
   return (
     <div className="flex flex-col items-center justify-center h-[60vh]">
-      <svg className="w-12 h-12 mb-4 text-pink-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 48 48">
-        <path d="M24 4l4.8 13.6H43l-11.2 8.2L36.6 40 24 31.6 11.4 40l4.8-14.2L5 17.6h14.2z" stroke="currentColor" strokeLinejoin="round"/>
+      <svg
+        className="w-12 h-12 mb-4 text-pink-400"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        viewBox="0 0 48 48"
+      >
+        <path
+          d="M24 4l4.8 13.6H43l-11.2 8.2L36.6 40 24 31.6 11.4 40l4.8-14.2L5 17.6h14.2z"
+          stroke="currentColor"
+          strokeLinejoin="round"
+        />
       </svg>
       <div className="text-xl font-bold text-white mb-1">No Apps Found</div>
-      <div className="text-gray-400">Click “Create New App” in the top right to get started!</div>
+      <div className="text-gray-400">
+        Click “Create New App” in the top right to get started!
+      </div>
     </div>
   );
 }
@@ -35,7 +48,11 @@ function AppsSkeleton() {
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
+  return d.toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
 }
 
 export default function AppsPage() {

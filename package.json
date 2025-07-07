@@ -51,6 +51,7 @@
     "react-hook-form": "^7.57.0",
     "sharp": "^0.34.2",
     "sonner": "^2.0.4",
+    "stripe": "^18.3.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
     "tsup": "^8.5.0",

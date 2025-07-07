@@ -4,6 +4,7 @@ import { db } from "@/server/db/db";
 import { headers } from "next/headers";
 import { and, eq, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { Award } from "lucide-react";
 
 /** createContext */
 /** 作用：为每个tRPC请求创建上下文对象 */
@@ -41,9 +42,18 @@ const checkSessionMiddleware = middleware(async ({ ctx, next }) => {
       code: "FORBIDDEN",
     });
   }
+  const user = await db.query.users.findFirst({
+    where: (users) => eq(users.id, (ctx as any).session.user.id),
+    columns: {
+      plan: true,
+    },
+  });
+  const plan = user?.plan;
+
   return next({
     ctx: {
       session: (ctx as any).session,
+      plan,
     },
   });
 });

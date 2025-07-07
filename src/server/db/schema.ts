@@ -161,6 +161,7 @@ export const files = pgTable(
     userId: text("user_id").notNull(),
     contentType: varchar("content_type", { length: 100 }).notNull(),
     appId: uuid("app_id").notNull(),
+    route: varchar("route", { length: 100 }).notNull(),
   }
   // (table) => ({
   //   cursorIdx: index("cursor_idx").on(table.id, table.createAt),

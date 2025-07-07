@@ -40,6 +40,7 @@ export const fileOpenRoutes = router({
       const dateString = isoString.split("T")[0];
 
       const app = ctx.app;
+      const plan = ctx.user.plan;
 
       if (!app || !app.storage) {
         throw new TRPCError({
@@ -105,6 +106,7 @@ export const fileOpenRoutes = router({
         type: z.string(),
         appId: z.string(),
         size: z.number(),
+        route: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -129,6 +131,7 @@ export const fileOpenRoutes = router({
           userId: user.id,
           contentType: input.type,
           appId: input.appId,
+          route: input.route,
         })
         /** returing就是把插入的数据返回 */
         .returning();

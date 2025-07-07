@@ -5,11 +5,23 @@ import {
   PutObjectCommand,
   S3Client,
   PutObjectCommandInput,
+  UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import z from "zod";
 import { apps } from "../db/schema";
 import { files } from "../db/schema";
-import { and, desc, gt, lt, asc, sql, eq, isNull } from "drizzle-orm";
+import {
+  and,
+  desc,
+  gt,
+  lt,
+  asc,
+  sql,
+  eq,
+  isNull,
+  isNotNull,
+  count,
+} from "drizzle-orm";
 import { filesCanOrderByColumns } from "../db/validate-schema";
 import { v4 as uuidv4 } from "uuid";
 import { TRPCError } from "@trpc/server";
@@ -47,6 +59,7 @@ export const fileRoutes = router({
       const date = new Date();
       const isoString = date.toISOString();
       const dateString = isoString.split("T")[0];
+      const plan = ctx.plan;
 
       const app = await db.query.apps.findFirst({
         where: (apps) => eq(apps.id, input.appId),
@@ -69,6 +82,25 @@ export const fileRoutes = router({
       }
 
       const storage = app.storage;
+
+      /** 限制普通用户上传文件数量 */
+      if (plan !== "payed") {
+        const uploadedFilesCount = await db
+          .select({ count: count() })
+          .from(files)
+          .where(and(eq(files.appId, app.id), isNull(files.deleteAt)));
+
+        const counts = uploadedFilesCount[0].count;
+
+        console.log(uploadedFilesCount);
+        console.log(counts);
+        if (counts > 10) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "超出上限",
+          });
+        }
+      }
 
       /** 上传文件的必要参数 */
       /**
@@ -120,11 +152,11 @@ export const fileRoutes = router({
         type: z.string(),
         appId: z.string(),
         size: z.number(),
+        route: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       const { session } = ctx;
-      console.log("input.filePath:", input.filePath);
 
       const url = new URL(input.filePath);
 
@@ -144,6 +176,7 @@ export const fileRoutes = router({
           userId: session.user.id,
           contentType: input.type,
           appId: input.appId,
+          route: input.route,
         })
         /** returing就是把插入的数据返回 */
         .returning();
