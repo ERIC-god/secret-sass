@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { ConfirmDangerModal } from "@/components/packaging/ConfirmDangerModal";
 
 export interface ISession {
   user: {
@@ -14,14 +15,16 @@ export interface ISession {
 
 export default function Detail({ session }: { session: ISession }) {
   const router = useRouter();
-
+  const [open, setOpen] = useState(false);
   // Replace with your real logout logic
   async function handleLogout() {
     // await logout();
     router.replace("/login");
   }
 
-  function handleDeleteAccount() {}
+  function handleDeleteAccount() {
+    setOpen(true);
+  }
 
   return (
     <div className="w-full h-full px-8 py-10">
@@ -93,13 +96,29 @@ export default function Detail({ session }: { session: ISession }) {
           <div className="text-gray-400 text-xs mb-3">
             Delete your account and all its associated data.
           </div>
-          <Button
+          {/* <Button
             variant="outline"
             className="border-pink-500 text-pink-500 hover:bg-pink-500/10"
             onClick={handleDeleteAccount}
           >
             Delete Account
-          </Button>
+          </Button> */}
+
+          <div>
+            <ConfirmDangerModal
+              open={open}
+              onClose={() => setOpen(false)}
+              onConfirm={() => {
+                // 这里写你的删除逻辑
+                alert("删除成功！");
+              }}
+              title="Are you sure you want to delete your account?"
+              description="This action cannot be undone. All your data will be permanently deleted. Please type DELETE to confirm."
+              confirmKeyword="DELETE"
+              confirmButtonText="Delete Account"
+              cancelButtonText="Cancel"
+            />
+          </div>
         </div>
       </div>
     </div>

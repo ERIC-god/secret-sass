@@ -61,15 +61,15 @@ export const storageRoutes = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const storage=await db.query.storageConfiguration.findFirst({
+      const storage = await db.query.storageConfiguration.findFirst({
         where: (storageConfiguration) =>
-          eq(storageConfiguration.id,input.storageId),
+          eq(storageConfiguration.id, input.storageId),
       });
 
-      if(storage?.userId!==ctx.session.user.id){
+      if (storage?.userId !== ctx.session.user.id) {
         throw new TRPCError({
-            code:'FORBIDDEN'
-        })
+          code: "FORBIDDEN",
+        });
       }
 
       await db
@@ -80,5 +80,17 @@ export const storageRoutes = router({
         .where(
           and(eq(apps.id, input.appId), eq(apps.userId, ctx.session.user.id))
         );
+    }),
+  deleteStore: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      return await db
+        .update(storageConfiguration)
+        .set({ deleteAt: new Date() })
+        .where(eq(storageConfiguration.id, input.id));
     }),
 });

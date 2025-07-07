@@ -223,6 +223,17 @@ export const apiKeys = pgTable("apiKeys", {
 //   })
 // );
 
+/** orders表 */
+export const orders = pgTable("orders", {
+  sessionId: varchar("sessionId", { length: 255 }).primaryKey(),
+  status: varchar("status", {
+      enum: ["created", "canceled", "completed"],
+  }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow(),
+  userId: text("id").notNull(),
+});
+
+
 export const usersRelations = relations(users, ({ many }) => ({
   files: many(files),
   apps: many(apps),
