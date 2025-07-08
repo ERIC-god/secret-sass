@@ -398,7 +398,35 @@ export default function AppPage({
 
   // 删除文件
   const { mutate: deleteFileMutation } =
-    trpcClientReact.file.deleteFile.useMutation();
+    trpcClientReact.file.deleteFile.useMutation({
+      onSuccess: (_data, deletedId) => {
+        toast.success("Delete File Success!", {
+          position: "top-center",
+          style: { top: "50px" },
+        });
+
+        utils.file.infinityQueryFiles.setInfiniteData(
+          {
+            limit: 10,
+            orderBy: {
+              order: "desc",
+              field: "createAt",
+            },
+            appId,
+          },
+          (prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              pages: prev.pages.map((page) => ({
+                ...page,
+                items: page.items.filter((item) => item.id !== deletedId),
+              })),
+            };
+          }
+        );
+      },
+    });
 
   // 排序
   const [isDesc, setIsDesc] = useState<Boolean>(true);

@@ -59,5 +59,10 @@ export const appRoutes = router({
         id: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {}),
+    .mutation(async ({ ctx, input }) => {
+      return await db
+        .update(apps)
+        .set({ deleteAt: new Date() })
+        .where(eq(apps.id, input.id));
+    }),
 });

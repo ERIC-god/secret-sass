@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ConfirmDangerModal } from "@/components/packaging/ConfirmDangerModal";
+import { trpcClientReact } from "@/utils/client";
 
 export interface ISession {
   user: {
@@ -16,15 +17,21 @@ export interface ISession {
 export default function Detail({ session }: { session: ISession }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { mutate: logout } = trpcClientReact.user.userLogout.useMutation();
+
   // Replace with your real logout logic
   async function handleLogout() {
     // await logout();
-    router.replace("/login");
+    // router.replace("/login");
+    logout();
+    setTimeout(() => {
+      router.push("/");
+    }, 700);
   }
 
-  function handleDeleteAccount() {
-    setOpen(true);
-  }
+  // function handleDeleteAccount() {
+  //   setOpen(true);
+  // }
 
   return (
     <div className="w-full h-full px-8 py-10">

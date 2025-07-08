@@ -22,5 +22,9 @@ export const apiKeyRoutes=router({
 
         // console.log(result);
         return result[0]
+    }),
+
+    deleteapiKey:protectedProcedure.input(z.object({id:z.number()})).mutation(async ({ctx,input})=>{
+        return await db.update(apiKeys).set({deletedAt:new Date()}).where(eq(apiKeys.id,input.id))
     })
 })
