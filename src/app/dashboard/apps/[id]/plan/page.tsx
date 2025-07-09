@@ -8,6 +8,7 @@ const plans = [
   {
     key: "free",
     name: "Free",
+    status: "free",
     subtitle: "Everything you need to start uploading!",
     price: "Free",
     features: [
@@ -20,20 +21,20 @@ const plans = [
   },
   {
     key: "pro",
+    status: "payed",
     name: "Pro",
     subtitle: "For those with teams or more than 2 gigs of files.",
     price: "$10/month",
     features: [
       "100GB of storage",
       "Private Files",
-      "Unlimited uploads and downloads"
+      "Unlimited uploads and downloads",
     ],
   },
 ];
 
 // 假设你有当前套餐 data
 // const data = "free"; // or "pro"
-
 
 export default function PlanPage() {
   const { data } = trpcClientReact.user.getPlan.useQuery();
@@ -69,7 +70,7 @@ export default function PlanPage() {
               <div className="text-white">
                 Plan:{" "}
                 <span className="font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 bg-clip-text text-transparent">
-                  {plans.find((p) => p.key === data)?.name}
+                  {plans.find((p) => p.status === data)?.name}
                 </span>
               </div>
               <div className="text-gray-400 text-sm">No expiration.</div>
@@ -95,14 +96,14 @@ export default function PlanPage() {
               <div
                 key={plan.key}
                 className={`relative bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] p-8 flex flex-col gap-3
-                  ${plan.key === data ? "ring-2 ring-pink-400/60" : ""}
+                  ${plan.status === data ? "ring-2 ring-pink-400/60" : ""}
                 `}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl font-extrabold text-white">
                     {plan.name}
                   </span>
-                  {plan.key === data && (
+                  {plan.status === data && (
                     <span className="ml-2 px-3 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white text-xs font-bold shadow">
                       Current plan
                     </span>
@@ -125,7 +126,7 @@ export default function PlanPage() {
                     {plan.note}
                   </div>
                 )}
-                {plan.key !== data && (
+                {plan.status !== data && (
                   <Button
                     className="mt-4 w-full py-2 rounded-lg font-bold text-lg bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white shadow-lg hover:scale-105 transition"
                     onClick={handleUpgrade}

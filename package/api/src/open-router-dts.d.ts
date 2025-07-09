@@ -1,4 +1,5 @@
 import * as postgres from 'postgres';
+import * as drizzle_orm_neon_http from 'drizzle-orm/neon-http';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
 
@@ -17,10 +18,9 @@ declare const openRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     }, _trpc_server_unstable_core_do_not_import.DecorateCreateRouterOptions<{
         createPresignedUrl: _trpc_server.TRPCMutationProcedure<{
             input: {
-                contentType: string;
-                appId: string;
-                filename: string;
                 size: number;
+                contentType: string;
+                filename: string;
             };
             output: {
                 url: string;
@@ -31,35 +31,40 @@ declare const openRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             input: {
                 name: string;
                 type: string;
-                appId: string;
+                size: number;
+                route: string;
                 filePath: string;
             };
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             };
         }>;
         listFiles: _trpc_server.TRPCQueryProcedure<{
             input: void;
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             }[];
         }>;
         infinityQueryFiles: _trpc_server.TRPCQueryProcedure<{
@@ -80,6 +85,7 @@ declare const openRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                     id: string;
                     name: string;
                     type: string;
+                    size: number;
                     createAt: Date | null;
                     deleteAt: Date | null;
                     path: string;
@@ -87,6 +93,7 @@ declare const openRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                     userId: string;
                     contentType: string;
                     appId: string;
+                    route: string;
                 }[];
                 nextCursor: {
                     createAt: Date;
@@ -96,7 +103,7 @@ declare const openRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
         }>;
         deleteFile: _trpc_server.TRPCMutationProcedure<{
             input: string;
-            output: postgres.RowList<never[]>;
+            output: drizzle_orm_neon_http.NeonHttpQueryResult<never> | postgres.RowList<never[]>;
         }>;
     }>>;
 }>>;

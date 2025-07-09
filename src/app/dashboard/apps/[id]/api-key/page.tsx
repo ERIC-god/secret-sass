@@ -87,9 +87,25 @@ import {
 } from "@/components/ui/popover";
 import { trpcClientReact } from "@/utils/client";
 import { Copy, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
+
+// 辅助函数：格式化 secret
+function maskSecret(secret: string) {
+  if (!secret) return "";
+  if (secret.length <= 8) return secret;
+  return secret.slice(0, 4) + "*".repeat(secret.length - 8) + secret.slice(-4);
+}
+
+// Quick Copy 区域内容
+function getEnvContent(keyObj: any, mask = true) {
+  if (!keyObj) return "";
+  return (
+    `UPLOADTHING_SECRET='${mask ? maskSecret(keyObj.key) : keyObj.key}'\n` +
+    `UPLOADTHING_APP_ID='${keyObj.appId || ""}'`
+  );
+}
 
 export default function ApiKeyPage({
   params: { id },
@@ -98,6 +114,7 @@ export default function ApiKeyPage({
 }) {
   const [newApikeyName, setNewApikeyName] = useState<string>("");
   const [showKeyId, setShowKeyId] = useState<number | null>(null);
+  const [selectedKeyId, setSelectedKeyId] = useState<number>(0);
 
   const { data: apiKeys, isPending } =
     trpcClientReact.apiKey.listapiKeys.useQuery({
@@ -120,7 +137,7 @@ export default function ApiKeyPage({
       },
     }
   );
-
+  // 删除 key
   const { mutate: deleteKey } = trpcClientReact.apiKey.deleteapiKey.useMutation(
     {
       onSuccess: (_data, { id: deletedId }) => {
@@ -133,8 +150,31 @@ export default function ApiKeyPage({
     }
   );
 
-  // 快速复制
-  const quickCopyValue = "UPLOADING_TOKEN='eyJhcG...'";
+  // 初始化 selectedKeyId 为第一个 key
+  useEffect(() => {
+    if (apiKeys && apiKeys.length > 0 && !selectedKeyId) {
+      setSelectedKeyId(apiKeys[0].id);
+    }
+  }, [apiKeys, selectedKeyId]);
+
+  // 选中的 key 对象
+  const selectedKeyObj = useMemo(
+    () =>
+      apiKeys && apiKeys.length
+        ? apiKeys.find((k) => k.id === selectedKeyId) || apiKeys[0]
+        : null,
+    [apiKeys, selectedKeyId]
+  );
+
+  // Quick Copy 区域内容（只显示部分 secret）
+  const quickCopyValue = selectedKeyObj
+    ? getEnvContent(selectedKeyObj, true)
+    : "";
+  // 复制内容（复制全部 secret）
+  const quickCopyFullValue = selectedKeyObj
+    ? getEnvContent(selectedKeyObj, false)
+    : "";
+
   return (
     <div className="w-full flex flex-col items-center mt-10">
       <div className="w-full max-w-3xl">
@@ -142,23 +182,40 @@ export default function ApiKeyPage({
         <div className="text-gray-400 mb-8">
           View and manage your UploadThing API keys.
         </div>
-        {/* 快速复制 */}
+        {/* Quick Copy */}
         <div className="bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-xl shadow-lg border border-[#35356a] p-6 mb-8">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-white">Quick Copy</span>
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white font-bold px-4 py-1 rounded-lg shadow hover:scale-105 transition"
-              onClick={() => {
-                copy(quickCopyValue);
-                toast.success("Copied!", { position: "top-center" });
-              }}
-            >
-              <Copy className="w-4 h-4 mr-1" /> Copy
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* 下拉选择 key */}
+              <select
+                className="bg-black/80 text-white px-2 py-1 rounded mr-2"
+                value={String(selectedKeyId)}
+                onChange={(e) => setSelectedKeyId(Number(e.target.value))}
+                style={{ minWidth: 120 }}
+              >
+                {apiKeys &&
+                  apiKeys.map((k) => (
+                    <option key={k.id} value={String(k.id)}>
+                      {k.name}
+                    </option>
+                  ))}
+              </select>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white font-bold px-4 py-1 rounded-lg shadow hover:scale-105 transition"
+                onClick={() => {
+                  copy(quickCopyFullValue);
+                  toast.success("Copied!", { position: "top-center" });
+                }}
+                disabled={!quickCopyFullValue}
+              >
+                <Copy className="w-4 h-4 mr-1" /> Copy
+              </Button>
+            </div>
           </div>
-          <div className="bg-black/80 text-green-400 font-mono rounded p-3 text-sm overflow-x-auto">
-            {quickCopyValue}
+          <div className="bg-black/80 text-green-400 font-mono rounded p-3 text-sm overflow-x-auto whitespace-pre">
+            {quickCopyValue || "请选择一个 Key"}
           </div>
         </div>
         {/* 标题和创建按钮分开 */}
@@ -234,9 +291,7 @@ export default function ApiKeyPage({
                     <td className="py-2 text-white">{k.name}</td>
                     <td className="py-2 text-center">
                       <span className="bg-black/60 text-white px-2 py-1 rounded font-mono text-xs mr-2 inline-block">
-                        {showKeyId === k.id
-                          ? k.key
-                          : k.key.replace(/.(?=.{6})/g, "*")}
+                        {showKeyId === k.id ? k.key : maskSecret(k.key)}
                       </span>
                       <Button
                         size="icon"

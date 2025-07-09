@@ -31,7 +31,7 @@ export const fileOpenRoutes = router({
         filename: z.string(),
         contentType: z.string(),
         size: z.number(),
-        appId: z.string(),
+        // appId: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -86,7 +86,7 @@ export const fileOpenRoutes = router({
 
       /** getSignedUrl 生成一个临时、有权限限制的 URL，允许未经 AWS 身份验证的用户直接访问或操作 S3 中的对象，而无需拥有 AWS 凭证。 */
       const url = await getSignedUrl(s3Client, command, {
-        expiresIn: 300,
+        expiresIn: 30,
       });
 
       return {
@@ -104,15 +104,14 @@ export const fileOpenRoutes = router({
         name: z.string(),
         filePath: z.string(),
         type: z.string(),
-        appId: z.string(),
         size: z.number(),
         route: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { user } = ctx;
-      console.log("input.filePath:", input.filePath);
+      const { user, app } = ctx;
 
+      const appId = app.id;
       const url = new URL(input.filePath);
 
       /** 执行插入数据库 */
@@ -130,7 +129,7 @@ export const fileOpenRoutes = router({
           /** 每个文件都有一个对应的userId */
           userId: user.id,
           contentType: input.type,
-          appId: input.appId,
+          appId: appId,
           route: input.route,
         })
         /** returing就是把插入的数据返回 */

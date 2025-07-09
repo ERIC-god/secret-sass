@@ -6,14 +6,19 @@ export const apiClient = createTRPCClient({
         }),
     ],
 });
-export const createApiClient = ({ apiKey }) => {
+export const createApiClient = ({ apiKey, signedToken, }) => {
+    const header = {};
+    if (apiKey) {
+        header["api-key"] = apiKey;
+    }
+    if (signedToken) {
+        header["signed-token"] = signedToken;
+    }
     return createTRPCClient({
         links: [
             httpBatchLink({
                 url: "http://localhost:3000/api/open",
-                headers: {
-                    "api-key": apiKey
-                }
+                headers: header,
             }),
         ],
     });

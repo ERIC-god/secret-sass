@@ -14,7 +14,7 @@ export default function Page() {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     const result = await createApp(name, description);
-    // router.replace(`/dashboard/apps/${result.appId}`)
+    // router.replace(`/dashboard/apps/${result}`);
   }
 
   return (

@@ -346,25 +346,38 @@ import { useEffect, useRef, useState } from "react";
 import { trpcClient, trpcClientReact } from "@/utils/client";
 import { useUppyState } from "../../../useUppyState";
 import { Button } from "@/components/ui/button";
-import { MoveUp, MoveDown, Trash2, Copy, Upload } from "lucide-react";
+import {
+  MoveUp,
+  MoveDown,
+  Trash2,
+  Copy,
+  Upload,
+  Inbox,
+  MoreHorizontal,
+} from "lucide-react";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
 import { FileFlowUploadModal } from "./components/FileFlowUploadModal";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/packaging/LoadingSpinner";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 export default function AppPage({
   params: { id: appId },
 }: {
   params: { id: string };
 }) {
-  const { data: apps, isPending } = trpcClientReact.app.listApps.useQuery(
-    void 0,
-    {
+  const { data: apps, isPending: listAppsPending } =
+    trpcClientReact.app.listApps.useQuery(void 0, {
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
-    }
-  );
+    });
 
   const currentApp = apps?.filter((app) => app.id === appId)[0];
   const router = useRouter();
@@ -568,13 +581,29 @@ export default function AppPage({
   // 上传弹窗
   const [showUploadModal, setShowUploadModal] = useState(false);
 
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
   // fileList.map((item) => {
   //   console.log(item.data);
   // });
 
+  // 全选/反选
+  const allSelected =
+    fileList.length > 0 && selectedIds.length === fileList.length;
+  const isIndeterminate =
+    selectedIds.length > 0 && selectedIds.length < fileList.length;
+
+  // 批量删除
+  const handleBatchDelete = () => {
+    // 你可以在这里批量调用 deleteFileMutation
+    selectedIds.forEach((id) => deleteFileMutation(id));
+    setSelectedIds([]);
+  };
+
   return (
     <div className="w-full flex flex-col items-center pt-4">
       <div className="w-full max-w-5xl">
+        {/* ... 你的头部和上传按钮 */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-white mb-1">Files</h2>
@@ -590,7 +619,6 @@ export default function AppPage({
             <Upload className="w-5 h-5" /> Upload
           </Button>
         </div>
-
         {/* 上传弹窗 */}
         <FileFlowUploadModal
           open={showUploadModal}
@@ -603,13 +631,33 @@ export default function AppPage({
           }}
         />
 
-        {/* 表格 */}
+        {/* ... 上传弹窗等 */}
+        {listAppsPending && (
+          <LoadingSpinner
+            text="Loading files..."
+            position="center"
+            className=" left-32"
+          />
+        )}
         <div className="bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="text-gray-400 text-sm">
                 <th className="px-4 py-3">
-                  <input type="checkbox" disabled />
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isIndeterminate;
+                    }}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedIds(fileList.map((f) => f.id));
+                      } else {
+                        setSelectedIds([]);
+                      }
+                    }}
+                  />
                 </th>
                 <th className="px-4 py-3 font-bold select-none">
                   <div className="flex items-center gap-1">
@@ -630,17 +678,77 @@ export default function AppPage({
                 <th className="px-4 py-3 font-bold">Size</th>
                 <th className="px-4 py-3 font-bold">Uploaded</th>
                 <th className="px-4 py-3 font-bold">Status</th>
-                <th className="px-4 py-3 font-bold"></th>
+                {/* ...按钮列 */}
+                <th
+                  className="px-4 py-3 font-bold text-right"
+                  style={{ minWidth: 60 }}
+                >
+                  {selectedIds.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="hover:bg-pink-500/20"
+                        >
+                          <MoreHorizontal className="w-5 h-5 text-white" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-[#23235b] border-[#35356a] rounded-xl shadow-lg"
+                      >
+                        <DropdownMenuItem
+                          className="text-pink-400 hover:bg-pink-500/10 cursor-pointer"
+                          onClick={handleBatchDelete}
+                        >
+                          <Trash2 className="inline w-4 h-4 mr-2" />
+                          Delete files
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </th>
               </tr>
             </thead>
+
             <tbody>
+              {!listAppsPending && fileList.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="p-0">
+                    <div className="flex flex-col items-center justify-center py-24 bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-2xl shadow-lg border border-[#35356a] m-4">
+                      <Inbox className="w-12 h-16 text-blue-400 mb-4" />
+                      <div className="text-2xl font-extrabold text-white mb-2">
+                        No files uploaded yet
+                      </div>
+                      <div className="text-gray-400 text-base">
+                        Upload some files to get started!
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {fileList.map((file: any) => (
                 <tr
                   key={file.id}
-                  className="border-t border-white/10 hover:bg-white/5 transition group"
+                  className={`border-t border-white/10 hover:bg-white/5 transition group ${
+                    selectedIds.includes(file.id) ? "bg-pink-500/10" : ""
+                  }`}
                 >
                   <td className="px-4 py-3">
-                    <input type="checkbox" />
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(file.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedIds((prev) => [...prev, file.id]);
+                        } else {
+                          setSelectedIds((prev) =>
+                            prev.filter((id) => id !== file.id)
+                          );
+                        }
+                      }}
+                    />
                   </td>
                   <td className="px-4 py-3 text-white font-medium">
                     {file.name}
@@ -659,7 +767,7 @@ export default function AppPage({
                   <td className="px-4 py-3 text-green-400">
                     {file.status || "Uploaded"}
                   </td>
-                  <td className="px-4 py-3 flex gap-2">
+                  <td className="px-4 py-3 flex gap-2 justify-end">
                     <Button
                       size="icon"
                       variant="ghost"

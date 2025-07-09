@@ -22,7 +22,7 @@ export async function createApp(name:string,description:string) {
        */
       const newApp = await serverCaller({ session }).app.createApp(input.data);
 
-      redirect(`/dashboard/apps/${newApp.id}`)
+      redirect(`/dashboard/apps/${newApp.id}/files`);
       // return {appId:newApp.id}
     }
     else{

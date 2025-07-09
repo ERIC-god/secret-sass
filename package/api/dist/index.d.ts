@@ -12,10 +12,9 @@ export declare const apiClient: import("@trpc/client").TRPCClient<import("@trpc/
     }, import("@trpc/server/unstable-core-do-not-import").DecorateCreateRouterOptions<{
         createPresignedUrl: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                contentType: string;
-                appId: string;
-                filename: string;
                 size: number;
+                contentType: string;
+                filename: string;
             };
             output: {
                 url: string;
@@ -26,35 +25,40 @@ export declare const apiClient: import("@trpc/client").TRPCClient<import("@trpc/
             input: {
                 name: string;
                 type: string;
-                appId: string;
+                size: number;
+                route: string;
                 filePath: string;
             };
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             };
         }>;
         listFiles: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             }[];
         }>;
         infinityQueryFiles: import("@trpc/server").TRPCQueryProcedure<{
@@ -75,6 +79,7 @@ export declare const apiClient: import("@trpc/client").TRPCClient<import("@trpc/
                     id: string;
                     name: string;
                     type: string;
+                    size: number;
                     createAt: Date | null;
                     deleteAt: Date | null;
                     path: string;
@@ -82,6 +87,7 @@ export declare const apiClient: import("@trpc/client").TRPCClient<import("@trpc/
                     userId: string;
                     contentType: string;
                     appId: string;
+                    route: string;
                 }[];
                 nextCursor: {
                     createAt: Date;
@@ -91,12 +97,13 @@ export declare const apiClient: import("@trpc/client").TRPCClient<import("@trpc/
         }>;
         deleteFile: import("@trpc/server").TRPCMutationProcedure<{
             input: string;
-            output: import("postgres").RowList<never[]>;
+            output: import("drizzle-orm/neon-http").NeonHttpQueryResult<never> | import("postgres").RowList<never[]>;
         }>;
     }>>;
 }>>>;
-export declare const createApiClient: ({ apiKey }: {
-    apiKey: string;
+export declare const createApiClient: ({ apiKey, signedToken, }: {
+    apiKey?: string;
+    signedToken?: string;
 }) => import("@trpc/client").TRPCClient<import("@trpc/server/unstable-core-do-not-import").BuiltRouter<{
     ctx: object;
     meta: object;
@@ -111,10 +118,9 @@ export declare const createApiClient: ({ apiKey }: {
     }, import("@trpc/server/unstable-core-do-not-import").DecorateCreateRouterOptions<{
         createPresignedUrl: import("@trpc/server").TRPCMutationProcedure<{
             input: {
-                contentType: string;
-                appId: string;
-                filename: string;
                 size: number;
+                contentType: string;
+                filename: string;
             };
             output: {
                 url: string;
@@ -125,35 +131,40 @@ export declare const createApiClient: ({ apiKey }: {
             input: {
                 name: string;
                 type: string;
-                appId: string;
+                size: number;
+                route: string;
                 filePath: string;
             };
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             };
         }>;
         listFiles: import("@trpc/server").TRPCQueryProcedure<{
             input: void;
             output: {
-                path: string;
                 id: string;
                 name: string;
                 userId: string;
                 type: string;
                 createAt: Date | null;
                 deleteAt: Date | null;
+                size: number;
+                path: string;
                 url: string;
                 contentType: string;
                 appId: string;
+                route: string;
             }[];
         }>;
         infinityQueryFiles: import("@trpc/server").TRPCQueryProcedure<{
@@ -174,6 +185,7 @@ export declare const createApiClient: ({ apiKey }: {
                     id: string;
                     name: string;
                     type: string;
+                    size: number;
                     createAt: Date | null;
                     deleteAt: Date | null;
                     path: string;
@@ -181,6 +193,7 @@ export declare const createApiClient: ({ apiKey }: {
                     userId: string;
                     contentType: string;
                     appId: string;
+                    route: string;
                 }[];
                 nextCursor: {
                     createAt: Date;
@@ -190,7 +203,7 @@ export declare const createApiClient: ({ apiKey }: {
         }>;
         deleteFile: import("@trpc/server").TRPCMutationProcedure<{
             input: string;
-            output: import("postgres").RowList<never[]>;
+            output: import("drizzle-orm/neon-http").NeonHttpQueryResult<never> | import("postgres").RowList<never[]>;
         }>;
     }>>;
 }>>>;
