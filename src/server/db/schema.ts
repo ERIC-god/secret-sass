@@ -31,7 +31,7 @@ export const users = pgTable("user", {
   name: text("name"),
   email: text("email").unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
-  plan: text("plan", { enum: ["free", "payed"] }),
+  plan: text("plan", { enum: ["free", "payed"] }).default("free"),
   image: text("image"),
 });
 

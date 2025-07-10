@@ -7,6 +7,7 @@ import { db } from "@/server/db/db";
 
 export const storageRoutes = router({
   listStorages: protectedProcedure.query(async ({ ctx }) => {
+    // 只返回用户自定义 storage，官方 storage 不入库
     const configuration = await db.query.storageConfiguration.findMany({
       where: (storageConfiguration) =>
         and(
@@ -61,15 +62,18 @@ export const storageRoutes = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const storage = await db.query.storageConfiguration.findFirst({
-        where: (storageConfiguration) =>
-          eq(storageConfiguration.id, input.storageId),
-      });
-
-      if (storage?.userId !== ctx.session.user.id) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
+      // storageId=0 表示官方 storage，不校验 userId
+      if (input.storageId !== 0) {
+        const storage = await db.query.storageConfiguration.findFirst({
+          where: (storageConfiguration) =>
+            eq(storageConfiguration.id, input.storageId),
         });
+
+        if (storage?.userId !== ctx.session.user.id) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+          });
+        }
       }
 
       await db

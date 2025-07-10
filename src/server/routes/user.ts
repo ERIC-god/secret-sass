@@ -1,9 +1,6 @@
 import { protectedProcedure, router } from "../trpc-middlewares/trpc";
-import z from 'zod';
-import {v4 as uuidv4} from 'uuid'
 import { db } from "@/server/db/db";
 import { eq } from "drizzle-orm";
-import { orders, users } from "../db/schema";
 import { Stripe } from "stripe";
 import { TRPCError } from "@trpc/server";
 import { cookies } from "next/headers";
@@ -21,7 +18,7 @@ export const userRoute = router({
   }),
 
   upgrade: protectedProcedure.mutation(async ({ ctx }) => {
-      const stripe = new Stripe(process.env.STRIPE_ID!);
+    const stripe = new Stripe(process.env.STRIPE_ID!);
 
     const session = await stripe.checkout.sessions.create({
       billing_address_collection: "auto",

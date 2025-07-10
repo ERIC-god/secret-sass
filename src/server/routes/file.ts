@@ -47,7 +47,6 @@ export const fileRoutes = router({
    */
   createPresignedUrl: protectedProcedure
     .input(
-      /** 使用Zod定义输入参数验证规则 */
       z.object({
         filename: z.string(),
         contentType: z.string(),
@@ -61,6 +60,7 @@ export const fileRoutes = router({
       const dateString = isoString.split("T")[0];
       const plan = ctx.plan;
 
+      // 查找 app 及其 storage
       const app = await db.query.apps.findFirst({
         where: (apps) => eq(apps.id, input.appId),
         with: {
@@ -68,32 +68,27 @@ export const fileRoutes = router({
         },
       });
 
-      if (!app || !app.storage) {
+      if (!app) {
         throw new TRPCError({
           code: "BAD_REQUEST",
+          message: "App not found",
         });
       }
 
-      /** 此处存在严重安全漏洞,可能会被恶意攻击,没有判断此用户是否有权限操控此app */
+      // 权限校验
       if (ctx.session.user.id !== app.userId) {
         throw new TRPCError({
           code: "FORBIDDEN",
         });
       }
 
-      const storage = app.storage;
-
-      /** 限制普通用户上传文件数量 */
+      // 限制普通用户上传数量
       if (plan !== "payed") {
         const uploadedFilesCount = await db
           .select({ count: count() })
           .from(files)
           .where(and(eq(files.appId, app.id), isNull(files.deleteAt)));
-
         const counts = uploadedFilesCount[0].count;
-
-        console.log(uploadedFilesCount);
-        console.log(counts);
         if (counts > 10) {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -102,35 +97,49 @@ export const fileRoutes = router({
         }
       }
 
-      /** 上传文件的必要参数 */
-      /**
-       * 设置上传文件的参数对象
-       * PutObjectCommandInput是AWS S3 SDK中的类型
-       */
+      // 判断 storageId=0（官方存储）还是自定义
+      let bucket, region, apiEndpoint, accessKeyId, secretAccessKey;
+      if (app.storageId === 0) {
+        // 官方存储，读服务端环境变量
+        bucket = process.env.COS_APP_BUCKET!;
+        region = process.env.COS_APP_REGION!;
+        apiEndpoint = process.env.COS_APP_ENDPOINT!;
+        accessKeyId = process.env.COS_APP_ID!;
+        secretAccessKey = process.env.COS_APP_SECRET!;
+      } else {
+        // 用户自定义存储
+        if (!app.storage) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Storage not found",
+          });
+        }
+        bucket = app.storage.configuration.bucket;
+        region = app.storage.configuration.region;
+        apiEndpoint = app.storage.configuration.apiEndpoint;
+        accessKeyId = app.storage.configuration.accessKeyId;
+        secretAccessKey = app.storage.configuration.secretAccessKey;
+      }
+
+      // 生成预签名 URL
       const params: PutObjectCommandInput = {
-        Bucket: storage.configuration.bucket,
+        Bucket: bucket,
         Key: `${dateString}/${input.filename.replaceAll(" ", "-")}`,
         ContentType: input.contentType,
         ContentLength: input.size,
       };
-      /**
-       * 创建S3客户端实例
-       * 尽管使用AWS S3 SDK，但通过自定义endpoint指向腾讯云COS
-       */
+
       const s3Client = new S3Client({
-        endpoint: storage.configuration.apiEndpoint,
-        region: storage.configuration.region,
+        endpoint: apiEndpoint,
+        region,
         credentials: {
-          accessKeyId: storage.configuration.accessKeyId,
-          secretAccessKey: storage.configuration.secretAccessKey,
+          accessKeyId,
+          secretAccessKey,
         },
-        forcePathStyle: false, // 对于某些 S3 兼容服务可能需要
+        forcePathStyle: false,
       });
 
-      /** 创建Command , 通过getSignedUrl API, 来生成signed url*/
       const command = new PutObjectCommand(params);
-
-      /** getSignedUrl 生成一个临时、有权限限制的 URL，允许未经 AWS 身份验证的用户直接访问或操作 S3 中的对象，而无需拥有 AWS 凭证。 */
       const url = await getSignedUrl(s3Client, command, {
         expiresIn: 30,
       });

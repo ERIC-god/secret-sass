@@ -69,10 +69,7 @@ type DashboardLayoutProps = {
   };
 };
 
-export default async function DashboardLayout({
-  children,
-  user,
-}: DashboardLayoutProps) {
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   const session = await getServerSession();
 
   if (!session?.user) {

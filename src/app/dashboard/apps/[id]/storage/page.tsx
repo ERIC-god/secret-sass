@@ -115,9 +115,9 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { trpcClientReact } from "@/utils/client";
-import { Plus, CheckCircle2, Trash2 } from "lucide-react";
+import { Plus, CheckCircle2, Trash2, Star } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function StoragePage({
@@ -128,7 +128,10 @@ export default function StoragePage({
   const [open, setOpen] = useState(false);
   const [storageId, setStorageId] = useState<number>(0);
 
-  const { data: storages } = trpcClientReact.storage.listStorages.useQuery();
+  // 只获取自定义 storage
+  const { data: storages, isPending } =
+    trpcClientReact.storage.listStorages.useQuery();
+
   const { data: apps, isPending: isStoragesPending } =
     trpcClientReact.app.listApps.useQuery();
 
@@ -163,6 +166,23 @@ export default function StoragePage({
     });
 
   const currentApp = apps?.find((app) => app.id === id);
+
+  // 官方 storage 虚拟对象
+  const officialStorage = {
+    id: 0,
+    name: "Official Storage",
+    configuration: {
+      bucket: "secret-sass-1356904753",
+      region: "ap-guangzhou",
+      apiEndpoint: "https://cos.ap-guangzhou.myqcloud.com",
+      accessKeyId: "",
+      secretAccessKey: "",
+    },
+  };
+
+  // 合并官方和自定义 storage
+  const allStorages = [officialStorage, ...(storages || [])];
+
   return (
     <div className="w-full flex flex-col items-center mt-10">
       <div className="w-full max-w-3xl">
@@ -178,20 +198,18 @@ export default function StoragePage({
             className="bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white font-bold px-5 py-2 rounded-xl shadow hover:scale-105 transition"
           >
             <Link href={`/dashboard/apps/${id}/storage/new`}>
-              <Plus className="w-5 h-5 mr-1" /> Add Storage
+              <Plus className="w-5 h-5 mr-1" /> Add Your Storage
             </Link>
           </Button>
         </div>
-
         {/* 加载中状态 */}
         {isStoragesPending && (
           <div className="w-full flex flex-col items-center py-20">
             <div className="text-lg text-white font-bold mb-1">Loading...</div>
           </div>
         )}
-
-        {/* 空状态 */}
-        {!isStoragesPending && (!storages || storages.length === 0) && (
+        {/* 空状态（无自定义 storage 但官方 storage 依然渲染） */}
+        {/* {!isStoragesPending && (!storages || storages.length === 0) && (
           <div className="w-full flex flex-col items-center py-20">
             <CheckCircle2 className="w-10 h-10 text-blue-400 mb-2" />
             <div className="text-lg text-white font-bold mb-1">
@@ -201,132 +219,147 @@ export default function StoragePage({
               Click "Add Storage" to create your first storage configuration.
             </div>
           </div>
-        )}
-
+        )} */}
         {/* Storage Accordion */}
         <Accordion type="single" collapsible>
-          {storages?.map((storage) => (
-            <AccordionItem
-              key={storage.id}
-              value={storage.id.toString()}
-              className={`
-                mb-6 rounded-2xl shadow-lg border border-[#35356a] 
-                bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] 
-                overflow-hidden
-                ${
-                  storage.id === currentApp?.storageId
-                    ? "ring-2 ring-pink-400/60"
-                    : ""
-                }
-              `}
-            >
-              {/* 头部：名称+删除按钮 */}
-              <div className="flex items-center justify-between">
-                <AccordionTrigger
-                  className={`
-                    flex items-center gap-2 px-6 py-4 text-lg font-bold
-                    ${
-                      storage.id === currentApp?.storageId
-                        ? "text-pink-400"
-                        : "text-white"
-                    }
-                  `}
-                >
-                  {storage.name}
-                  {storage.id === currentApp?.storageId && (
-                    <CheckCircle2 className="w-5 h-5 text-pink-400 ml-2" />
-                  )}
-                </AccordionTrigger>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="mr-4 hover:bg-pink-500/20"
-                  onClick={() => {
-                    // TODO: 删除 storage 的逻辑
-                    setOpen(true);
-                    setStorageId(storage.id);
-                  }}
-                >
-                  <Trash2 className="w-5 h-5 text-pink-400" />
-                </Button>
-              </div>
-              <AccordionContent>
-                <div className="px-6 pb-6 pt-6">
-                  <div className="space-y-3 mb-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                      <span className="font-semibold text-white w-40">
-                        Bucket
-                      </span>
-                      <span className="break-all text-gray-200">
-                        {storage.configuration.bucket}
-                      </span>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                      <span className="font-semibold text-white w-40">
-                        AccessKeyId
-                      </span>
-                      <span className="break-all text-gray-200">
-                        {storage.configuration.accessKeyId}
-                      </span>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                      <span className="font-semibold text-white w-40">
-                        SecretAccessKey
-                      </span>
-                      <span className="break-all text-gray-200">
-                        {storage.configuration.secretAccessKey}
-                      </span>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                      <span className="font-semibold text-white w-40">
-                        Region
-                      </span>
-                      <span className="break-all text-gray-200">
-                        {storage.configuration.region}
-                      </span>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                      <span className="font-semibold text-white w-40">
-                        ApiEndpoint
-                      </span>
-                      <span className="break-all text-gray-200">
-                        {storage.configuration.apiEndpoint}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    disabled={storage.id === currentApp?.storageId}
-                    onClick={() => {
-                      mutate({
-                        appId: id,
-                        storageId: storage.id,
-                      });
-                    }}
-                    className={`w-full py-3 rounded-lg font-bold text-lg ${
-                      storage.id === currentApp?.storageId
-                        ? "bg-gray-600 text-white"
-                        : "bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white shadow-lg hover:scale-105 transition"
-                    }`}
+          {allStorages.map((storage) => {
+            const isOfficial = storage.id === 0;
+            return (
+              <AccordionItem
+                key={storage.id}
+                value={storage.id.toString()}
+                className={`
+                  mb-6 rounded-2xl shadow-lg border border-[#35356a] 
+                  bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] 
+                  overflow-hidden
+                  ${
+                    storage.id === currentApp?.storageId
+                      ? "ring-2 ring-pink-400/60"
+                      : ""
+                  }
+                `}
+              >
+                {/* 头部：名称+星星+删除按钮 */}
+                <div className="flex items-center justify-between">
+                  <AccordionTrigger
+                    className={`
+                      flex items-center gap-2 px-6 py-4 text-lg font-bold
+                      ${
+                        storage.id === currentApp?.storageId
+                          ? "text-pink-400"
+                          : "text-white"
+                      }
+                    `}
                   >
-                    {storage.id === currentApp?.storageId ? "In Use" : "Use"}
-                  </Button>
+                    {storage.name}
+                    {isOfficial && (
+                      <Star className="w-5 h-5 text-yellow-400 ml-2" />
+                    )}
+                    {storage.id === currentApp?.storageId && (
+                      <CheckCircle2 className="w-5 h-5 text-pink-400 ml-2" />
+                    )}
+                  </AccordionTrigger>
+                  {/* 只有自定义 storage 可删除 */}
+                  {!isOfficial && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="mr-4 hover:bg-pink-500/20"
+                      onClick={() => {
+                        setOpen(true);
+                        setStorageId(storage.id);
+                      }}
+                    >
+                      <Trash2 className="w-5 h-5 text-pink-400" />
+                    </Button>
+                  )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+                <AccordionContent>
+                  <div className="px-6 pb-6 pt-6">
+                    <div className="space-y-3 mb-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                        <span className="font-semibold text-white w-40">
+                          Bucket
+                        </span>
+                        <span className="break-all text-gray-200">
+                          {storage.configuration.bucket}
+                          {isOfficial && (
+                            <span className="ml-2 text-yellow-400">
+                              (official)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                        <span className="font-semibold text-white w-40">
+                          AccessKeyId
+                        </span>
+                        <span className="break-all text-gray-200">
+                          {isOfficial
+                            ? "Not visible"
+                            : storage.configuration.accessKeyId}
+                        </span>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                        <span className="font-semibold text-white w-40">
+                          SecretAccessKey
+                        </span>
+                        <span className="break-all text-gray-200">
+                          {isOfficial
+                            ? "Not visible"
+                            : storage.configuration.secretAccessKey}
+                        </span>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                        <span className="font-semibold text-white w-40">
+                          Region
+                        </span>
+                        <span className="break-all text-gray-200">
+                          {storage.configuration.region}
+                        </span>
+                      </div>
+                      <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                        <span className="font-semibold text-white w-40">
+                          ApiEndpoint
+                        </span>
+                        <span className="break-all text-gray-200">
+                          {storage.configuration.apiEndpoint}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      disabled={storage.id === currentApp?.storageId}
+                      onClick={() => {
+                        mutate({
+                          appId: id,
+                          storageId: storage.id,
+                        });
+                      }}
+                      className={`w-full py-3 rounded-lg font-bold text-lg ${
+                        storage.id === currentApp?.storageId
+                          ? "bg-gray-600 text-white"
+                          : "bg-gradient-to-r from-yellow-400 via-pink-500 to-blue-500 text-white shadow-lg hover:scale-105 transition"
+                      }`}
+                    >
+                      {storage.id === currentApp?.storageId ? "In Use" : "Use"}
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
-
         <ConfirmDangerModal
           open={open}
           onClose={() => setOpen(false)}
           onConfirm={() => {
-            // 这里写你的删除逻辑
+            // 删除逻辑
             deleteStore({ id: storageId });
           }}
-          title="Are you sure you want to delete your account?"
-          description="This action cannot be undone. All your data will be permanently deleted. Please type DELETE to confirm."
+          title="Are you sure you want to delete this storage?"
+          description="This action cannot be undone. All your data for this storage will be permanently deleted. Please type DELETE to confirm."
           confirmKeyword="DELETE"
-          confirmButtonText="Delete Account"
+          confirmButtonText="Delete Storage"
           cancelButtonText="Cancel"
         />
       </div>

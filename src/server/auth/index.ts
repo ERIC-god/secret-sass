@@ -40,6 +40,7 @@ export const authOptions: AuthOptions = {
     GitlabProvider({
       clientId: process.env.GITLAB_CLIENTID!,
       clientSecret: process.env.GITLAB_CLIENTSECRET!,
+      httpOptions: { timeout: 10000 },
     }),
   ],
 

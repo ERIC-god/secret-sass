@@ -90,6 +90,7 @@ import { Copy, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import React, { useMemo, useState, useEffect } from "react";
 import copy from "copy-to-clipboard";
 import { toast } from "sonner";
+import { ApiSdkQuickStart } from "@/components/packaging/ApiQuickyStart";
 
 // 辅助函数：格式化 secret
 function maskSecret(secret: string) {
@@ -102,8 +103,8 @@ function maskSecret(secret: string) {
 function getEnvContent(keyObj: any, mask = true) {
   if (!keyObj) return "";
   return (
-    `UPLOADTHING_SECRET='${mask ? maskSecret(keyObj.key) : keyObj.key}'\n` +
-    `UPLOADTHING_APP_ID='${keyObj.appId || ""}'`
+    `FILEFLOW_SECRET='${mask ? maskSecret(keyObj.key) : keyObj.key}'\n` +
+    `FILEFLOW_APP_ID='${keyObj.appId || ""}'`
   );
 }
 
@@ -179,8 +180,9 @@ export default function ApiKeyPage({
     <div className="w-full flex flex-col items-center mt-10">
       <div className="w-full max-w-3xl">
         <h2 className="text-2xl font-extrabold text-white mb-1">API Keys</h2>
+        <ApiSdkQuickStart></ApiSdkQuickStart>
         <div className="text-gray-400 mb-8">
-          View and manage your UploadThing API keys.
+          View and manage your FileFlow API keys.
         </div>
         {/* Quick Copy */}
         <div className="bg-gradient-to-br from-[#23235b] via-[#29295e] to-[#23235b] rounded-xl shadow-lg border border-[#35356a] p-6 mb-8">
@@ -189,6 +191,7 @@ export default function ApiKeyPage({
             <div className="flex items-center gap-2">
               {/* 下拉选择 key */}
               <select
+                title="select"
                 className="bg-black/80 text-white px-2 py-1 rounded mr-2"
                 value={String(selectedKeyId)}
                 onChange={(e) => setSelectedKeyId(Number(e.target.value))}
